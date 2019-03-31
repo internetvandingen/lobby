@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script src="socket.io/socket.io.js"></script>
+  </head>
+  <body>
+    <div id='lobby'>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>players</th>
+            <th class='refresh'>refresh</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class='dropdown'>
+            <td>0</td>
+            <td>My game</td>
+            <td>0/3</td>
+            <td>dd</td>
+          </tr>
+        </tbody>
+      </table>
+    <span class='drop' style='display:none;'>test</span>
+    </div>
+    <div id="chat">
+      <ul id="messages"></ul>
+      <form action="">
+        <input id="m" autocomplete="off" /><button>Send</button>
+      </form>
+    </div>
+
+    <script src="client.js"></script>
+  </body>
+</html>
