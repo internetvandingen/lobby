@@ -9,6 +9,5 @@ pipelines:
   default:
     - step:
         script:
-          - apt-get update
           - apt-get -qq install git-ftp
           - git ftp init --user $FTPUSERNAME --passwrd $FTP_PASSWORD ftp://s10.servitnow.nl/lobby
