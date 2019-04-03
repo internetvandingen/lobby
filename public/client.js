@@ -29,6 +29,8 @@ $(function () {
     return false;
   });
 
+  socket.emit('refresh lobby');
+
   socket.on('chat message', function(msg){
     let cur_date = new Date();
     $('#messages')
@@ -45,23 +47,27 @@ $(function () {
 
   socket.on('refresh lobby', function(lobby) {
     // remove all rows in table
-    $('tbody').empty();
+//    $('.tbody').empty();
     // add lobby data
     for (let i=0; i<lobby.length; i++){
-      $('table').append($('<tr>')
-        .append($('<td>').text(lobby[i].id))
-        .append($('<td>').text(lobby[i].name))
-        .append($('<td>').text(lobby[i].player_count))
-        .append($('<td>').text(lobby[i].map))
+      $('.tbody').append($('<div class="row drop">')
+        .append($('<div class="el">').text(lobby[i].id))
+        .append($('<div class="el">').text(lobby[i].name))
+        .append($('<div class="el">').text(lobby[i].player_count+'/'+lobby[i].max_players))
+        .append($('<div class="el">').append($('<i class="material-icons">').text('keyboard_arrow_down')))
+        .append($('<div class="clear">'))
+      );
+      $('.tbody').append($('<div class="info">')
+        .append($('<div>').text(lobby[i].map))
+        .append($('<div class="clear">'))
       );
     }
+    $('.drop').click(function() {
+      $(this).next().slideToggle(200);
+    });
   });
 
 
   $('th.refresh').click(function() { socket.emit('refresh lobby'); });
-  $('tr.dropdown').click(
-    function() {
-      $('.drop').slideToggle(400);
-    });
 });
 

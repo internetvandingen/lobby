@@ -2,31 +2,24 @@
 <html>
   <head>
     <meta charset="utf-8"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" type="text/css" href="style.css" />
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script src="socket.io/socket.io.js"></script>
   </head>
   <body>
     <div id='lobby'>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>players</th>
-            <th class='refresh'>refresh</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class='dropdown'>
-            <td>0</td>
-            <td>My game</td>
-            <td>0/3</td>
-            <td>dd</td>
-          </tr>
-        </tbody>
-      </table>
-    <span class='drop' style='display:none;'>test</span>
+      <div class='thead'>
+        <div class='row'>
+          <div class='el'>ID</div>
+          <div class='el'>Name</div>
+          <div class='el'>players</div>
+          <div class='el' refresh'><i class="material-icons">refresh</i></div>
+          <div class='clear'></div>
+        </div>
+      </div>
+      <div class='tbody'>
+      </div>
     </div>
     <div id="chat">
       <ul id="messages"></ul>

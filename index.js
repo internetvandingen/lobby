@@ -23,8 +23,18 @@ var max_nr_players = 2;
 var players = {};
 var lobby = [];
 
-lobby.push({id:0, name:'Lennarts game', player_count:0, map:'map1'});
-lobby.push({id:0, name:'Lennarts game', player_count:0, map:'map1'});
+
+function game(name, max_players, map) {
+  this.id = (lobby.length==0 ? 0 : lobby[lobby.length-1].id+1);
+  this.name = name;
+  this.player_count = 0;
+  this.max_players = max_players;
+  this.board = {};
+  this.map = map;
+}
+
+lobby.push(new game('Lennarts game', 2, 'map1'));
+lobby.push(new game('Marks game', 3, 'map1'));
 
 
 io.on('connection', function(socket) {
