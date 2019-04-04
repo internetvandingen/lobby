@@ -20,8 +20,8 @@ socket.on('player', function(id) {
 });
 
 
-// -------------------------------------------------  chat communication ------------------------------------------------- 
 $(function () {
+// -------------------------------------------------  chat communication ------------------------------------------------- 
   $('form').submit(function(e){
     e.preventDefault(); // prevents page reloading
     socket.emit('chat message', $('#m').val());
@@ -44,10 +44,10 @@ $(function () {
     $('#messages').scrollTop($('#messages').prop('scrollTopMax'))
   });
 
-
+// -------------------------------------------------  lobby communication ------------------------------------------------- 
   socket.on('refresh lobby', function(lobby) {
     // remove all rows in table
-//    $('.tbody').empty();
+    $('.tbody').empty();
     // add lobby data
     for (let i=0; i<lobby.length; i++){
       $('.tbody').append($('<div class="row drop">')
@@ -58,16 +58,25 @@ $(function () {
         .append($('<div class="clear">'))
       );
       $('.tbody').append($('<div class="info">')
-        .append($('<div>').text(lobby[i].map))
+        .append($('<div class="join button">').text('Join'))
+        .append($('<div class="map">').text(lobby[i].map))
         .append($('<div class="clear">'))
       );
     }
     $('.drop').click(function() {
       $(this).next().slideToggle(200);
     });
+    $('.join').click(function() {
+      socket.emit('join', $(this).parent().prev().children(":first").text());
+    });
   });
 
+  socket.on('join accepted', function(game_id){
+    $('canvas').show();
+    $('#lobby').hide();
+  });
 
-  $('th.refresh').click(function() { socket.emit('refresh lobby'); });
+  $('.refresh').click(function() { socket.emit('refresh lobby'); });
+  $('.new').click(function() { socket.emit('new game'); });
 });
 

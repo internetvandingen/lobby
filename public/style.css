@@ -2,7 +2,7 @@ html, body {height:100%; width:100%;}
 * { box-sizing: border-box; margin: 0; padding: 0;}
 body { font: 18px Helvetica, Arial;}
 
-#lobby, #chat, form { display:block; position:absolute;}
+canvas, #lobby, #chat, form { display:block; position:absolute;}
 ul {position:absolute; padding-bottom:40px; width:100%; height:100%; overflow-y:scroll;}
 #messages { list-style-type: none; margin: 0; padding: 0; }
 #messages li { padding: 5px 10px;}
@@ -11,19 +11,22 @@ ul {position:absolute; padding-bottom:40px; width:100%; height:100%; overflow-y:
 
 form { background: black; width: 100%; bottom:0; border:3px solid black;}
 form input { border: none; padding: 10px; width:80%; margin-right: 0.5%; overflow-y:scroll; border-radius:5px;}
-form button { width:19.5%; background: rgb(130, 224, 255); border: none; overflow:hidden; padding: 10px; border-radius:5px; }
+form button { width:19.5%; background: #ccc; border: none; overflow:hidden; padding: 10px; border-radius:5px; }
 
 @media screen and (orientation:portrait) {
-  #lobby {width:100%; height:70%;}
+  #lobby, canvas {width:100%; height:70%;}
   #chat {bottom:0; width:100%; height:30%;}
 }
 @media screen and (orientation:landscape) {
-  #lobby {width:70%; height:100%; }
+  #lobby, canvas {width:70%; height:100%; }
   #chat {right:0; width:30%; height:100%;}
 }
 
-.material-icons {cursor:pointer;}
 
+/* Lobby */
+div div{text-align: center;}
+.material-icons, .button {cursor:pointer;}
+.lobby { position:absolute; width:100%; overflow-y:hidden;}
 .el { float:left; height:100%; padding:5px; border:1px solid black; overflow:hidden;}
 .clear { clear: both; }
 .row {width:100%; height:2em;}
@@ -35,3 +38,7 @@ form button { width:19.5%; background: rgb(130, 224, 255); border: none; overflo
   display:none;
   border:1px solid black;
 }
+.join { float:right; border:1px solid black; width:15%; padding:5px;}
+.map { height:10em; }
+
+

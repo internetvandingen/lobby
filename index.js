@@ -66,6 +66,19 @@ io.on('connection', function(socket) {
     socket.emit('refresh lobby', lobby);
   });
 
+  socket.on('join', function(game_id){
+    let available = attempt_join(socket.id, game_id);
+    if(available){
+      socket.emit('join accepted', game_id);
+//      socket.emit('state', lobby[game_id]);
+    }
+  });
+
+  socket.on('new game', function(){
+    console.log('player '+players[socket.id]+'made new game');
+    attempt_create_game();
+  });
+
   socket.on('disconnect', function() {
     if (Object.keys(players).includes(socket.id)){
       io.emit('chat message', {id:'player '+players[socket.id], message:' disconnected', color:players[socket.id]});
@@ -77,9 +90,18 @@ io.on('connection', function(socket) {
 });
 
 function recieved_chat_message(msg, socketid){
-    if (msg != ''){
-      let temp_name = Object.keys(players).includes(socketid) ? 'player '+players[socketid] : 'spectator '+spectators[socketid] ;
-      io.emit('chat message', {id:temp_name+': ', message:msg, color:players[socketid]});
-    }
+  if (msg != ''){
+    let temp_name = Object.keys(players).includes(socketid) ? 'player '+players[socketid] : 'spectator '+spectators[socketid] ;
+    io.emit('chat message', {id:temp_name+': ', message:msg, color:players[socketid]});
+  }
+}
+
+function attempt_join(socket_id, game_id) {
+  console.log('player ' + players[socket_id] + ' tried to join ' + game_id);
+  return(true);
+}
+
+function attempt_create_game() {
+//  lobby.push(new game('Lennarts game', 2, 'map1'));
 }
 
