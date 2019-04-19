@@ -3,8 +3,8 @@ html, body {height:100%; width:100%;}
 body { font: 18px Helvetica, Arial;}
 
 canvas, #lobby, #chat, form { display:block; position:absolute;}
-ul {position:absolute; padding-bottom:40px; width:100%; height:100%; overflow-y:scroll;}
-#messages { list-style-type: none; margin: 0; padding: 0; }
+ul {position:absolute; width:100%; overflow-y:scroll;}
+#messages { list-style-type: none; margin: 0; padding: 0; top:0px; bottom:43px;}
 #messages li { padding: 5px 10px;}
 #messages li:nth-child(odd) { background: #eee; }
 #messages li span:nth-child(3n+2) { font-weight: 600;}
