@@ -23,9 +23,10 @@ var max_nr_players = 50;
 var players = {}; // {'id':#, 'gameid':#}
 var lobby = [];
 
+// rooms: 0 = lobby, 1-inf = game id
 
 function Game(name, max_players, map) {
-  this.id = (lobby.length==0 ? 0 : lobby[lobby.length-1].id+1);
+  this.id = (lobby.length==0 ? 1 : lobby[lobby.length-1].id+1);
   this.name = name;
   this.player_count = 0;
   this.players = {};
@@ -48,12 +49,13 @@ io.on('connection', function(socket) {
     }
     for (let i=1; i<=max_nr_players; i++){
       if (!current_players.includes(i)){
-        players[socket.id] = {'id':i, 'gameid':-1};
+        players[socket.id] = {'id':i, 'gameid':0};
         break;
       }
     }
     socket.emit('player', players[socket.id].id);
-    io.emit('chat message', {id:'player '+players[socket.id].id, message:' connected', color:players[socket.id].id});
+    socket.join('room0');
+    io.sockets.in('room0').emit('chat message', {id:'player '+players[socket.id].id, message:' connected', color:players[socket.id].id});
   } else {
     // disallow player and disconnect
     socket.emit('chat message', {id:'', message:'Lobby is full! ('+max_nr_players+')', color:0});
@@ -68,11 +70,16 @@ io.on('connection', function(socket) {
     socket.emit('refresh lobby', lobby);
   });
 
-  socket.on('join', function(game_id){
-    let available = attempt_join(socket.id, game_id);
+  socket.on('join', function(gameid){
+    let available = attempt_join(socket.id, gameid);
     if(available){
-      socket.emit('join accepted', game_id);
-//      socket.emit('state', lobby[game_id]);
+      socket.emit('join accepted', gameid);
+      socket.emit('chat message', {id:'Server: ', message:'You are now in lobby '+gameid, color:0});
+      socket.join('room'+gameid);
+      socket.leave('room0');
+      players[socket.id].gameid = gameid;
+      lobby[gameid].players[socket.id] = players[socket.id];
+//      socket.emit('state', lobby[gameid]);
     }
   });
 
@@ -83,10 +90,11 @@ io.on('connection', function(socket) {
 
   socket.on('disconnect', function() {
     if (Object.keys(players).includes(socket.id)){
-      io.emit('chat message', {id:'player '+players[socket.id].id, message:' disconnected', color:players[socket.id].id});
+      let p = players[socket.id];
+      io.sockets.in('room'+p.gameid).emit('chat message', {id:'player '+p.id, message:' disconnected', color:players[socket.id].id});
       delete players[socket.id];
     } else {
-      io.emit('chat message', {id:'', message:'Unknown player disconnected', color:0});
+      io.sockets.in('room0').emit('chat message', {id:'', message:'Unknown player disconnected', color:0});
     }
   });
 });
@@ -94,21 +102,18 @@ io.on('connection', function(socket) {
 function recieved_chat_message(msg, socketid){
   if (msg != ''){
     let temp_name = Object.keys(players).includes(socketid) ? 'player '+players[socketid].id : 'spectator '+spectators[socketid] ;
-    io.emit('chat message', {id:temp_name+': ', message:msg, color:players[socketid].id});
+    let roomid = players[socketid].gameid;
+    console.log(roomid);
+    io.sockets.in('room'+roomid).emit('chat message', {id:temp_name+': ', message:msg, color:players[socketid].id});
   }
 }
 
-function attempt_join(socket_id, game_id) {
-  console.log('player ' + players[socket_id] + ' tried to join ' + game_id);
+function attempt_join(socket_id, gameid) {
+  console.log('player ' + players[socket_id] + ' tried to join ' + gameid);
   return(true);
 }
 
 function attempt_create_game() {
   lobby.push(new Game('Lennarts game', 2, 'map1'));
-}
-
-function join_game(game, socketid, gameid) {
-  players[socketid].gameid = gameid;
-  game.players[socketid] = players[socketid];
 }
 

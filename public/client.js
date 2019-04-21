@@ -72,6 +72,7 @@ $(function () {
   });
 
   socket.on('join accepted', function(game_id){
+    $('ul').empty();
     $('canvas').show();
     $('#lobby').hide();
   });
