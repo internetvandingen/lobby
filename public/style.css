@@ -4,7 +4,7 @@ body { font: 18px Helvetica, Arial;}
 
 canvas, #lobby, #chat, form { display:block; position:absolute;}
 ul {position:absolute; width:100%; overflow-y:scroll;}
-#messages { list-style-type: none; margin: 0; padding: 0; top:0px; bottom:43px;}
+#messages { list-style-type: none; margin: 0; padding: 0; top:2em; bottom:43px;}
 #messages li { padding: 5px 10px;}
 #messages li:nth-child(odd) { background: #eee; }
 #messages li span:nth-child(3n+2) { font-weight: 600;}
@@ -26,7 +26,7 @@ form button { width:19.5%; background: #ccc; border: none; overflow:hidden; padd
 /* Lobby */
 div div{text-align: center;}
 .material-icons, .button {cursor:pointer;}
-.lobby { position:absolute; width:100%; overflow-y:hidden;}
+#lobby {overflow-y:scroll;}
 .el { float:left; height:100%; padding:5px; border:1px solid black; overflow:hidden;}
 .clear { clear: both; }
 .row {width:100%; height:2em;}
@@ -40,5 +40,6 @@ div div{text-align: center;}
 }
 .join { float:right; border:1px solid black; width:15%; padding:5px;}
 .map { height:10em; }
+.menu {width:100%; height:2em; background-color: #ccc; padding:5px;}
 
 

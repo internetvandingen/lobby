@@ -46,20 +46,21 @@ $(function () {
 
 // -------------------------------------------------  lobby communication ------------------------------------------------- 
   socket.on('refresh lobby', function(lobby) {
+    let keys = Object.keys(lobby);
     // remove all rows in table
     $('.tbody').empty();
     // add lobby data
-    for (let i=0; i<lobby.length; i++){
-      $('.tbody').append($('<div class="row drop">')
-        .append($('<div class="el">').text(lobby[i].id))
-        .append($('<div class="el">').text(lobby[i].name))
-        .append($('<div class="el">').text(lobby[i].player_count+'/'+lobby[i].max_players))
+    for (let i=0; i<keys.length; i++){
+      $('.tbody').append($('<div class="row drop button">')
+        .append($('<div class="el">').text(lobby[keys[i]].id))
+        .append($('<div class="el">').text(lobby[keys[i]].name))
+        .append($('<div class="el">').text(lobby[keys[i]].player_count+'/'+lobby[keys[i]].max_players))
         .append($('<div class="el">').append($('<i class="material-icons">').text('keyboard_arrow_down')))
         .append($('<div class="clear">'))
       );
       $('.tbody').append($('<div class="info">')
         .append($('<div class="join button">').text('Join'))
-        .append($('<div class="map">').text(lobby[i].map))
+        .append($('<div class="map">').text(lobby[keys[i]].map))
         .append($('<div class="clear">'))
       );
     }
@@ -79,5 +80,11 @@ $(function () {
 
   $('.refresh').click(function() { socket.emit('refresh lobby'); });
   $('.new').click(function() { socket.emit('new game'); });
+  $('.return').click(function() {
+    $('ul').empty();
+    $('canvas').hide();
+    $('#lobby').show();
+    socket.emit('leave game');     
+  });
 });
 
