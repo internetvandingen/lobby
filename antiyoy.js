@@ -78,7 +78,6 @@ this.Game = function(board, size_x, size_y, max_players){
   this.max_players = max_players;
   this.max_spectators = 1;
   this.broadcast_frequency = 30;
-  this.interval_id = null;
   this.message = 'Your turn';
 
   this.selected = null;
@@ -206,6 +205,7 @@ this.Game = function(board, size_x, size_y, max_players){
         this.selected = null;
       }
     }
+    this.send_state();
   }
   
   this.clicked_gui_unit = function(){
@@ -222,6 +222,7 @@ this.Game = function(board, size_x, size_y, max_players){
       this.selected.available_tiles = this.get_available_tiles_new_man(this.selected.index, this.selected.rank);
       this.highlight_tiles(this.selected.available_tiles);
     }
+    this.send_state();
   }
   
   this.clicked_gui_structure = function(){
@@ -252,6 +253,7 @@ this.Game = function(board, size_x, size_y, max_players){
       this.selected.available_tiles = this.get_available_tiles_farm(this.selected.index);
     }
     this.highlight_tiles(this.selected.available_tiles);
+    this.send_state();
   }
   
   this.clicked_gui_end_turn = function(){
@@ -259,11 +261,6 @@ this.Game = function(board, size_x, size_y, max_players){
     this.selected = null;
     this.board_history = [];
     this.seed_history = [];
-  
-    // reset interval
-    if (this.interval_id != null){
-      clearInterval(this.interval_id);
-    }
   
     // check if players are defeated
     for (let i=1;i<=this.max_players;i++){
@@ -334,16 +331,30 @@ this.Game = function(board, size_x, size_y, max_players){
     this.board_last_turn = this.parse_board(this.board);
     // broadcast state once for every player
     this.send_state_spec();
-  
-    // setup interval for next player
-    let socketid = getKeyByValue(this.players, this.current_players_turn);
+    this.send_state();
+  }
 
-    this.interval_id = setInterval( () => this.send_state(socketid), 1000/this.broadcast_frequency );
-  
+  this.clicked_gui_undo = function(){
+    this.remove_highlighted_tiles();
+    this.selected = null;
+    if (this.board_history.length>0){
+      this.board = this.board_history.pop();
+    }
+    if (this.seed_history.length>0){
+      Math.seed = this.seed_history.pop();
+    }
+    this.send_state();
   }
   
-  
-  this.send_state = function(socketid) {
+  this.clicked_background = function(){
+    this.selected = null;
+    this.remove_highlighted_tiles();
+    this.send_state();
+  }
+
+  this.send_state = function() {
+  // sends full information state to player whose turn it is
+  let socketid = getKeyByValue(this.players, this.current_players_turn);
     io.to(socketid).emit('antiyoy state', {
       board:this.board,
       size_x:this.size_x,
@@ -356,6 +367,7 @@ this.Game = function(board, size_x, size_y, max_players){
   }
 
   this.send_state_spec = function(){
+  // broadcast partial information state to all players in room (including spectators)
     io.sockets.in('room'+this.index).emit('antiyoy state', {
       board:this.board,
       size_x:this.size_x,
@@ -365,22 +377,6 @@ this.Game = function(board, size_x, size_y, max_players){
       current_players_turn:this.current_players_turn,
       raw_income:this.raw_income
     });
-  }
-
-  this.clicked_gui_undo = function(){
-    this.remove_highlighted_tiles();
-    this.selected = null;
-    if (this.board_history.length>0){
-      this.board = this.board_history.pop();
-    }
-    if (this.seed_history.length>0){
-      Math.seed = this.seed_history.pop();
-    }
-  }
-  
-  this.clicked_background = function(){
-    this.selected = null;
-    this.remove_highlighted_tiles();
   }
 
   // ---------------------------------- from index ---------------------------------- 
@@ -398,19 +394,16 @@ this.Game = function(board, size_x, size_y, max_players){
         }
       }
       socket.emit('antiyoy player', this.players[socket.id]);
-      // setinterval
       if (this.players[socket.id] == this.current_players_turn){
-        // setup interval for current player
-        let send_state = this.send_state.bind(this, socket.id); // js way of a partial function, pass this so it's correct in the function
-        this.interval_id = setInterval(send_state , 1000 / this.broadcast_frequency);
         // broadcast state once for every other player
         this.send_state_spec();
+	// send full state to the player whose turn it is
+        this.send_state();
       } else {
         // not first player, so only emit state once
         this.send_state_spec();
       }
-      // end setinterval
-  
+
     } else { //TODO: make this function return something, accepted as player or spectator, or rejected
       if (Object.keys(this.spectators) < this.max_spectators){
         // allow spectator
@@ -500,12 +493,8 @@ this.Game = function(board, size_x, size_y, max_players){
     if (winner != null){
       // game is over
       io.sockets.in('room'+this.index).emit('chat message', {id:'player '+winner, message:' has won!', color:winner});
-      // reset interval
-      if (this.interval_id != null){
-        clearInterval(this.interval_id);
-      }
       this.board_last_turn = this.parse_board(this.board);
-      io.sockets.in('room'+this.index).emit('antiyoy state', {board:this.board_last_turn, size_x:this.size_x, size_y:this.size_y, msg:'Player '+winner+' wins!', selected:null, raw_income:this.raw_income});
+      this.send_state_spec();
       return(true);
     } else {
       return(false);

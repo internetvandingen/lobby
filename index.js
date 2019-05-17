@@ -29,18 +29,6 @@ var lobby = {}; // {'gameid': Game object}
 
 // rooms: 0 = lobby, 1-inf = game id
 
-// Minimal attributes of game
-//function Game(index, name, max_players, map) {
-//  this.index = index;
-//  this.name = name;
-//  this.player_count = 0;
-//  this.players = {};
-//  this.max_players = max_players;
-//  this.board = {};
-//  this.map = map;
-//  this.new_player = function(socket){}
-//}
-
 function add_game(name, max_players, map, map_size=8){
   let index = (Object.keys(lobby).length==0 ? 1 : lobby[Object.keys(lobby).sort().pop()].index+1 );
 
@@ -185,7 +173,7 @@ io.on('connection', function(socket) {
     }
   });
 
-  socket.on('background', function(){
+  socket.on('antiyoy background', function(){
     let gameindex = players[socket.id].gameid;
     let g = lobby[gameindex];
     if (g.players[socket.id] == g.current_players_turn){
