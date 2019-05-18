@@ -81,7 +81,8 @@ this.Game = function(board, size_x, size_y, max_players){
   this.message = 'Your turn';
 
   this.selected = null;
-// {'index':hex_index, 'item':'man', 'rank':0, 'new':true, 'available_tiles':available_tiles} if something is selected, otherwise null
+// if something is selected: {'index':hex_index, 'item':'man', 'rank':0, 'new':true, 'available_tiles':available_tiles}
+// otherwise: 		     null
 
   this.board_last_turn = JSON.parse(JSON.stringify(this.board));
   this.current_players_turn = 1;
@@ -228,21 +229,28 @@ this.Game = function(board, size_x, size_y, max_players){
   this.clicked_gui_structure = function(){
     this.remove_highlighted_tiles();
     if (this.selected == null){return;}
+    this.selected.available_tiles = [];
     if (this.selected.item == 'farm') {
       this.selected.item = 'tower';
       this.selected.rank = 0;
       this.selected.price = this.rules.price_tower[0];
-      this.selected.available_tiles = this.get_available_tiles_tower(this.selected.index);
+      if (this.selected.bank >= this.selected.price) {
+        this.selected.available_tiles = this.get_available_tiles_tower(this.selected.index);
+      }
     } else if (this.selected.item == 'tower'){
       if (this.selected.rank == 0){
         this.selected.rank = 1;
         this.selected.price = this.rules.price_tower[1];
-        this.selected.available_tiles = this.get_available_tiles_tower(this.selected.index);
+        if (this.selected.bank >= this.selected.price) {
+          this.selected.available_tiles = this.get_available_tiles_tower(this.selected.index);
+        }
       } else {
         this.selected.item = 'farm';
         this.selected.rank = Math.floor(Math.random()*3);
         this.selected.price = this.rules.price_farm + this.rules.price_farm_increase*this.get_farms_in_area(this.selected.index);
-        this.selected.available_tiles = this.get_available_tiles_farm(this.selected.index);
+        if (this.selected.bank >= this.selected.price) {
+          this.selected.available_tiles = this.get_available_tiles_farm(this.selected.index);
+        }
       }
     } else {
       // selected.item = none => area is selected
@@ -250,7 +258,9 @@ this.Game = function(board, size_x, size_y, max_players){
       this.selected.rank = Math.floor(Math.random()*3);
       this.selected.new = true;
       this.selected.price = this.rules.price_farm + this.rules.price_farm_increase*this.get_farms_in_area(this.selected.index);
-      this.selected.available_tiles = this.get_available_tiles_farm(this.selected.index);
+      if (this.selected.bank >= this.selected.price) {
+        this.selected.available_tiles = this.get_available_tiles_farm(this.selected.index);
+      }
     }
     this.highlight_tiles(this.selected.available_tiles);
     this.send_state();

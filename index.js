@@ -94,8 +94,8 @@ io.on('connection', function(socket) {
       g.new_player(socket);
       players[socket.id].gameid = gameid;
       g.player_count++;
-//      socket.emit('state', g);
     }
+    io.sockets.in('room0').emit('refresh lobby', lobby);
   });
 
   socket.on('new game', function(){
@@ -113,6 +113,7 @@ io.on('connection', function(socket) {
       socket.leave('room'+g.index);
       socket.join('room0');
       check_empty(g.index);
+      io.sockets.in('room0').emit('refresh lobby', lobby);
     }
   });
 
@@ -201,6 +202,7 @@ function recieved_chat_message(msg, socketid){
 
 function attempt_create_game() {
   add_game('Lennarts game', 2, 'map1');
+  io.sockets.in('room0').emit('refresh lobby', lobby);
 }
 
 
