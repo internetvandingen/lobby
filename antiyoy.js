@@ -23,7 +23,7 @@ this.generate_square = function(n=2){
   for (let x=0; x<size_x; x++){
     let temp_y = x%2==0 ? size_y-1 : size_y;
     for (let y=0; y<temp_y; y++){
-      board[x*size_y+y] = new Hextile(x, y);
+      board[x*size_y+y] = new this.Hextile(x, y);
     }
   }
   
@@ -48,6 +48,10 @@ this.generate_triangle = function(n=6){
   this.set_color(board, [n-2,n-3,2*n-1,2*n-2,3*n-2], 2, 2);
   this.set_color(board, [n*(n-3)+Math.floor(n/2)-1,n*(n-3)+Math.floor(n/2),n*(n-3)+Math.floor(n/2)+1,n*(n-2)+Math.ceil(n/2),n*(n-2)+Math.ceil(n/2)-1], 4, 3);
   return([board, size_x, size_y, max_players]);
+};
+
+this.available_generators = function(){
+  return(['triangle', 'square']);
 };
 
 this.set_color = function(board, arr, castle_index, color){

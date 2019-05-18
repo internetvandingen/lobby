@@ -79,7 +79,7 @@ $(function () {
   });
 
   $('.refresh').click(function() { socket.emit('refresh lobby'); });
-  $('.new').click(function() { socket.emit('new game'); });
+  $('.new').click(function() { socket.emit('new game', {'name':'Test game', 'type':'square', 'map_size':4}); });
   $('.return').click(function() {
     $('ul').empty();
     $('canvas').hide();

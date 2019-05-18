@@ -24,25 +24,30 @@ var Antiyoy = require('./antiyoy');
 var antiyoy = new Antiyoy(io);
 
 var max_nr_players = 50;
-var players = {}; // {'id':#, 'gameid':#}
+var players = {}; // {'id':#, 'gameid':#, 'pname':'player 1'}
 var lobby = {}; // {'gameid': Game object}
 
 // rooms: 0 = lobby, 1-inf = game id
 
-function add_game(name, max_players, map, map_size=8){
-  let index = (Object.keys(lobby).length==0 ? 1 : lobby[Object.keys(lobby).sort().pop()].index+1 );
-
-  var [board, size_x, size_y, max_players] = antiyoy.generate_triangle(map_size); //generate_square, generate_triangle
-  lobby[index] = new antiyoy.Game(board, size_x, size_y, max_players);
-
-  lobby[index].index = index;
-  lobby[index].player_count = 0;
-  lobby[index].name = name;
+function add_game(game_info){
+  // {name, type, map_size}
+  let name = game_info['name'];
+  let type = game_info['type'];
+  let map_size = game_info['map_size'];
+  console.log(game_info);
+  console.log(name, type, map_size);
+  // check if method exists and create new game
+  if (antiyoy.available_generators().indexOf(type) > -1){
+    var [board, size_x, size_y, max_players] = antiyoy['generate_'+type](map_size); //generate_square, generate_triangle
+    // get index ID to use for next game
+    let index = (Object.keys(lobby).length==0 ? 1 : lobby[Object.keys(lobby).sort().pop()].index+1 );
+    lobby[index] = new antiyoy.Game(board, size_x, size_y, max_players);
+  
+    lobby[index].index = index;
+    lobby[index].player_count = 0;
+    lobby[index].name = name;
+  }
 }
-
-add_game('Lennarts game', 2, 'map1');
-add_game('Marks game', 3, 'map1');
-
 
 function check_empty(gameid){
   if( lobby[gameid].player_count == 0 ){
@@ -60,7 +65,7 @@ io.on('connection', function(socket) {
     }
     for (let i=1; i<=max_nr_players; i++){
       if (!current_players.includes(i)){
-        players[socket.id] = {'id':i, 'gameid':0};
+        players[socket.id] = {'id':i, 'gameid':0, 'pname':'player '+i};
         break;
       }
     }
@@ -98,8 +103,10 @@ io.on('connection', function(socket) {
     io.sockets.in('room0').emit('refresh lobby', lobby);
   });
 
-  socket.on('new game', function(){
-    attempt_create_game();
+  socket.on('new game', function(new_game_info){
+    new_game_info['name'] = 'game of '+players[socket.id].pname;
+    add_game(new_game_info);
+    io.sockets.in('room0').emit('refresh lobby', lobby);
   });
 
   socket.on('leave game', function(){
@@ -198,11 +205,6 @@ function recieved_chat_message(msg, socketid){
     let roomid = players[socketid].gameid;
     io.sockets.in('room'+roomid).emit('chat message', {id:temp_name+': ', message:msg, color:players[socketid].id});
   }
-}
-
-function attempt_create_game() {
-  add_game('Lennarts game', 2, 'map1');
-  io.sockets.in('room0').emit('refresh lobby', lobby);
 }
 
 
