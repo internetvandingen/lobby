@@ -26,19 +26,20 @@ form button { width:19.5%; background: #ccc; border: none; overflow:hidden; padd
 /* Lobby */
 div div{text-align: center;}
 .material-icons, .button {cursor:pointer;}
-#lobby {overflow-y:scroll;}
-.el { float:left; height:100%; padding:5px; border:1px solid black; overflow:hidden;}
+#lobby {overflow-y:scroll; background-color:#333;}
+.el { float:left; height:100%; padding:5px; overflow:hidden; }
 .clear { clear: both; }
-.row {width:100%; height:2em;}
+.row {width:100%; height:2em; border-top:3px #971d20 solid; background-color:white; }
+.new {border-bottom:3px #971d20 solid; padding-left:5%; padding-right:15%;}
 .el:nth-child(1){ width:5%; }
 .el:nth-child(2){ width:80%; }
 .el:nth-child(3){ width:10%; }
 .el:nth-child(4){ width:5%; }
 .info {
   display:none;
-  border:1px solid black;
+  background-color:white;
 }
-.join { float:right; border:1px solid black; width:15%; padding:5px;}
+.join { float:right; width:15%; padding:5px; background-color:#ccc; border-radius: 5px;}
 .map { height:10em; }
 .menu {width:100%; height:2em; background-color: #ccc; padding:5px;}
 

@@ -100,7 +100,12 @@ $(function () {
             socket.emit('new game', {'name':game_name, 'type':game_map, 'map_size':game_size});
             $(this).dialog("close");
           }
-        }}
+        }},
+        open: function(){ 
+          $('.ui-widget-overlay').bind('click',function(){
+            $('#dialog').dialog('close');
+          })
+        }
   });
 
   socket.on('creation', function(index) {
