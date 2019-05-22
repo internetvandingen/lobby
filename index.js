@@ -34,8 +34,12 @@ function add_game(game_info){
   let name = game_info['name'];
   let type = game_info['type'];
   let map_size = game_info['map_size'];
-  console.log(game_info);
-  console.log(name, type, map_size);
+  name     =     name.replace(/[^a-zA-Z0-9]/g,'').trim();
+  type     =     type.replace(/[^a-zA-Z0-9]/g,'').trim();
+  map_size = map_size.replace(/[^0-9]/g,'').trim();
+  if (name == '' || type == '' || map_size == ''){
+    return('Invalid input!');
+  }
   // check if method exists and create new game
   if (antiyoy.available_generators().indexOf(type) > -1){
     var [board, size_x, size_y, max_players] = antiyoy['generate_'+type](map_size); //generate_square, generate_triangle
@@ -46,6 +50,9 @@ function add_game(game_info){
     lobby[index].index = index;
     lobby[index].player_count = 0;
     lobby[index].name = name;
+    return(index);
+  } else {
+    return('"'+name+'" is not an available map generator!');
   }
 }
 
@@ -87,26 +94,33 @@ io.on('connection', function(socket) {
   });
 
   socket.on('join', function(gameid){
-    let g = lobby[gameid];
-    if(g.player_count < g.max_players){
-      socket.emit('join accepted', gameid);
-      socket.emit('chat message', {id:'Server: ', message:'You are now in game '+gameid, color:0});
-      io.sockets.in('room'+gameid).emit('chat message',
-                                        {id:'player '+players[socket.id].id, message:' joined', color:players[socket.id].id});
-      socket.join('room'+gameid);
-      socket.leave('room0');
+    gameid = String(gameid);
+    if (Object.keys(lobby).includes(gameid)){
+      let g = lobby[gameid];
+      if(g.player_count < g.max_players){
+        socket.emit('join accepted', gameid);
+        socket.emit('chat message', {id:'Server: ', message:'You are now in game '+gameid, color:0});
+        io.sockets.in('room'+gameid).emit('chat message',
+                                          {id:'player '+players[socket.id].id, message:' joined', color:players[socket.id].id});
+        socket.join('room'+gameid);
+        socket.leave('room0');
 
-      g.new_player(socket);
-      players[socket.id].gameid = gameid;
-      g.player_count++;
+        g.new_player(socket);
+        players[socket.id].gameid = gameid;
+        g.player_count++;
+      }
     }
     io.sockets.in('room0').emit('refresh lobby', lobby);
   });
 
   socket.on('new game', function(new_game_info){
-    new_game_info['name'] = 'game of '+players[socket.id].pname;
-    add_game(new_game_info);
-    io.sockets.in('room0').emit('refresh lobby', lobby);
+    let result = add_game(new_game_info);
+    if (typeof(result) == 'number') {
+      io.sockets.in('room0').emit('refresh lobby', lobby);
+      socket.emit('creation', result);
+    } else {
+      socket.emit('error_message', result);
+    }
   });
 
   socket.on('leave game', function(){

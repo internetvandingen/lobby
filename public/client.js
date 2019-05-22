@@ -79,14 +79,39 @@ $(function () {
   });
 
   $('.refresh').click(function() { socket.emit('refresh lobby'); });
-  $('.new').click(function() { socket.emit('new game', {'name':'Test game', 'type':'square', 'map_size':4}); });
+  $('.new').click(function() { $("#dialog").dialog('open'); });
   $('.return').click(function() {
     $('ul').empty();
     $('canvas').hide();
     $('#lobby').show();
     socket.emit('leave game');     
   });
+
+  $("#dialog").dialog({
+        autoOpen: false,
+        resizable: false,
+        modal: true,
+        width:'auto',
+        buttons:{'create': function(){
+          let game_name = $('input[name=game_name]').val();
+          let game_size = $('input[name=game_size]').val();
+          let game_map  = $('select').val();
+          if (game_name != '' && game_map != '' && game_size>1){
+            socket.emit('new game', {'name':game_name, 'type':game_map, 'map_size':game_size});
+            $(this).dialog("close");
+          }
+        }}
+  });
+
+  socket.on('creation', function(index) {
+    socket.emit('join', index);
+  });
+  socket.on('error_message', function(error_msg) {
+    alert(error_msg);
+  });
 });
+
+
 
 
 // ------------------------------------------------- antiyoy ------------------------------------------------- 

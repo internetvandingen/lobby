@@ -6,6 +6,12 @@
     <link rel="stylesheet" type="text/css" href="style.css" />
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script src="socket.io/socket.io.js"></script>
+
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+
   </head>
   <body>
     <div id='lobby'>
@@ -34,4 +40,27 @@
     </div>
     <script src="client.js"></script>
   </body>
+
+  <div id="dialog" title="Create new antiyoy game">
+    <table>
+      <tr>
+          <td>name</td>
+          <td><input type='text' name='game_name'></input></td>
+      </tr>
+      <tr>
+          <td>map</td>
+          <td>
+            <select name='map'>
+              <option value='square'>Square (2 players)</option>
+              <option value='triangle'>Triangle (3 players)</option>
+            </select>
+          </td>
+      </tr>
+      <tr>
+          <td>map size</td>
+          <td><input type='number' name='game_size' value=4></input></td>
+      </tr>
+    </table>
+  </div>
+
 </html>

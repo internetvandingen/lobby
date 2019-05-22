@@ -16,6 +16,7 @@ this.Hextile = function(x, y) {
 
 this.generate_square = function(n=2){
   n = n<=2 ? 2 : n; // minimum of 2
+  n = n> 7 ? 7 : n; // maximum of 7
   let max_players = 2;
   let board = {};
   let size_y = 2*n+2;
@@ -34,6 +35,7 @@ this.generate_square = function(n=2){
 
 this.generate_triangle = function(n=6){
   n = n<=6 ? 6 : n; // minimum of 6
+  n = n>20 ? 20: n; // maximum of 20
   let max_players = 3;
   let board = {};
   let size_y = n, size_x = n;
