@@ -126,7 +126,7 @@ io.on('connection', function(socket) {
 
   socket.on('leave game', function(){
     let id = players[socket.id].gameid
-    if(id>0){
+    if(id>0 && Object.keys(lobby).includes(gameid)){
       let g = lobby[id];
       delete g.players[socket.id];
       g.player_count--;
@@ -143,7 +143,7 @@ io.on('connection', function(socket) {
     if (Object.keys(players).includes(socket.id)){
       let p = players[socket.id];
       io.sockets.in('room'+p.gameid).emit('chat message', {id:'player '+p.id, message:' disconnected', color:players[socket.id].id});
-      if(p.gameid != 0){
+      if(p.gameid != 0 && Object.keys(lobby).includes(p.gameid)){
         let g = lobby[p.gameid];
         delete g.players[socket.id];
         g.player_count--;
@@ -160,54 +160,68 @@ io.on('connection', function(socket) {
   socket.on('antiyoy undo', function() {
     let gameindex = players[socket.id].gameid;
     let g = lobby[gameindex];
-    if (g.players[socket.id] == g.current_players_turn){
-      g.clicked_gui_undo();
+    if (g instanceof antiyoy.Game){
+      if (g.players[socket.id] == g.current_players_turn){
+        g.clicked_gui_undo();
+      }
     }
   });
   socket.on('antiyoy structure', function() {
     let gameindex = players[socket.id].gameid;
     let g = lobby[gameindex];
-    if (g.players[socket.id] == g.current_players_turn){
-      g.clicked_gui_structure();
+    if (g instanceof antiyoy.Game){
+      if (g.players[socket.id] == g.current_players_turn){
+        g.clicked_gui_structure();
+      }
     }
   });
 
   socket.on('antiyoy unit', function() {
     let gameindex = players[socket.id].gameid;
     let g = lobby[gameindex];
-    if (g.players[socket.id] == g.current_players_turn){
-      g.clicked_gui_unit();
+    if (g instanceof antiyoy.Game){
+      if (g.players[socket.id] == g.current_players_turn){
+        g.clicked_gui_unit();
+      }
     }
   });
 
   socket.on('antiyoy end_turn', function() {
     let gameindex = players[socket.id].gameid;
     let g = lobby[gameindex];
-    if (g.players[socket.id] == g.current_players_turn){
-      g.clicked_gui_end_turn();
+    if (g instanceof antiyoy.Game){
+      if (g.players[socket.id] == g.current_players_turn){
+        g.clicked_gui_end_turn();
+      }
     }
   });
 
   socket.on('antiyoy clicked_hex', function(hex_index) {
     let gameindex = players[socket.id].gameid;
     let g = lobby[gameindex];
-    if (g.players[socket.id] == g.current_players_turn){
-      g.clicked_hex(hex_index);
+    if (g instanceof antiyoy.Game){
+      if (g.players[socket.id] == g.current_players_turn){
+        g.clicked_hex(hex_index);
+      }
     }
   });
 
   socket.on('antiyoy background', function(){
     let gameindex = players[socket.id].gameid;
     let g = lobby[gameindex];
-    if (g.players[socket.id] == g.current_players_turn){
-      g.clicked_background();
+    if (g instanceof antiyoy.Game){
+      if (g.players[socket.id] == g.current_players_turn){
+        g.clicked_background();
+      }
     }
   });
 
   socket.on('antiyoy resign', function(){
     let gameindex = players[socket.id].gameid;
     let g = lobby[gameindex];
-    g.try_resign(socket);
+    if (g instanceof antiyoy.Game){
+      g.try_resign(socket);
+    }
   });
   // ------------------------------------------------- END antiyoy ------------------------------------------------- 
 
