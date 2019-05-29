@@ -365,7 +365,7 @@ function draw_state(state) {
 
   // display message and player# in screen
   context.font = size_gui_font+"px Arial";
-  context.fillStyle = '#ffffff';
+  context.fillStyle = 'white';
 
   // display player number right corner
   context.textAlign = "right";
@@ -392,7 +392,6 @@ function draw_state(state) {
                    size_gui_icon+(i+0.15)*size_gui_font,
                    (canvas.width/5-size_gui_font*5/2)*public_income[i]/max_inc,
                    size_gui_font*0.9);
-      context.fillStyle = colors[i+1];
       context.fill()
     }
   }
@@ -401,6 +400,7 @@ function draw_state(state) {
       // draw price of placable unit
       context.textAlign = "center";
       if (selected.price != null){
+        context.fillStyle = "white";
         context.fillText('$'+selected.price, canvas.width/2, canvas.height-size_gui_icon/2+size_gui_font/3);
       }
 
@@ -427,7 +427,7 @@ function draw_state(state) {
                         size_gui_icon,
                         size_gui_icon);
       // display money situation
-      context.fillStyle = '#ffffff';
+      context.fillStyle = 'white';
       context.textAlign = "left";
       context.font = size_gui_font+"px Arial";
       context.fillText(selected.bank+' ' + (selected.income<0 ? '' : '+') + selected.income,
