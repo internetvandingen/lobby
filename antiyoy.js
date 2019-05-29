@@ -1,3 +1,5 @@
+'use strict';
+
 var fs = require('fs');
 
 // ------------------------------------------------- game functions ------------------------------------------------- 
@@ -15,6 +17,7 @@ this.Hextile = function(x, y) {
 };
 
 this.generate_square = function(n=2){
+  n = Number(n);
   n = n<=2 ? 2 : n; // minimum of 2
   n = n> 7 ? 7 : n; // maximum of 7
   let max_players = 2;
@@ -34,6 +37,7 @@ this.generate_square = function(n=2){
 };
 
 this.generate_triangle = function(n=6){
+  n = Number(n);
   n = n<=6 ? 6 : n; // minimum of 6
   n = n>20 ? 20: n; // maximum of 20
   let max_players = 3;
@@ -95,7 +99,7 @@ this.Game = function(board, size_x, size_y, max_players){
   Math.seed = new Date().getTime();
   this.seed_history = [Math.seed];
   this.board_history = [];
-  this.raw_income = [1,1,1];
+  this.public_income = [];
 
   // constants: gameplay
   this.rules = {
@@ -203,7 +207,7 @@ this.Game = function(board, size_x, size_y, max_players){
         // independent wether the attempted move can be made or not, if we clicked on our color, update information
         area = this.get_tiles_in_area(hex_index, [hex_index]);
         if (area.length>1){
-          money = this.get_money_status(area);
+          let money = this.get_money_status(area);
           this.selected = {'index':hex_index, 'item':'none', 'rank':'', 'new':false, 'available_tiles':[], 'bank':money[0], 'income':money[1]};
         } else {
           this.selected = null;
@@ -321,7 +325,7 @@ this.Game = function(board, size_x, size_y, max_players){
         let bank = money[0], income = money[1], castle_index = money[2];
         if (bank+income < 0){
           // all units starve
-          for (i in area){
+          for (let i in area){
             if (this.board[area[i]].item == 'man') {
               this.board[area[i]].item = 'grave';
               this.board[area[i]].rank = '';
@@ -335,14 +339,14 @@ this.Game = function(board, size_x, size_y, max_players){
         } else {
           // taxes can be payed
           this.board[castle_index].bank += income;
-          for (i in area){
+          for (let i in area){
             this.board[area[i]].can_move = true;
           }
         }
       }
     }
 
-    this.raw_income = this.get_raw_income();
+    this.public_income = this.get_income();
     // update state with last players turn
     this.board_last_turn = this.parse_board(this.board);
     // broadcast state once for every player
@@ -378,7 +382,7 @@ this.Game = function(board, size_x, size_y, max_players){
       msg:this.message,
       selected:this.selected,
       current_players_turn:this.current_players_turn,
-      raw_income:this.raw_income
+      public_income:this.public_income
     });
   }
 
@@ -391,7 +395,7 @@ this.Game = function(board, size_x, size_y, max_players){
       msg:'',
       selected:null,
       current_players_turn:this.current_players_turn,
-      raw_income:this.raw_income
+      public_income:this.public_income
     });
   }
 
@@ -444,17 +448,16 @@ this.Game = function(board, size_x, size_y, max_players){
 
     // Send images only when connecting
     for (let image_size=0;image_size<3;image_size++){
-      postfix = ['_lowest', '_low', ''][image_size];
-      image_names = {'coin':0, 'end_turn':0, 'exclamation_mark':0, 'undo':0, 'castle':0, 'farm':2, 'grave':0, 'house':0, 'man':3, 'palm':0, 'pine':0, 'tower':1, 'resign':0};
-      for (image_name in image_names){
+      let postfix = ['_lowest', '_low', ''][image_size];
+      let image_names = {'coin':0, 'end_turn':0, 'exclamation_mark':0, 'undo':0, 'castle':0, 'farm':2, 'grave':0, 'house':0, 'man':3, 'palm':0, 'pine':0, 'tower':1, 'resign':0};
+      for (let image_name in image_names){
         for (let i=0; i<=image_names[image_name];i++){
+          let image_number = '';
           if (image_names[image_name] != 0){
             image_number = i;
-          } else {
-            image_number = '';
           }
 
-          filename = image_name+image_number+postfix+'.png';
+          let filename = image_name+image_number+postfix+'.png';
           this.emit_image(socket, filename, image_name, image_number, image_size);
         }
       }
@@ -486,22 +489,19 @@ this.Game = function(board, size_x, size_y, max_players){
     });
   }
 
-  this.get_raw_income = function(){
-    let raw_income = [];
+  this.get_income = function(){
+    let income = [];
     for (let i=0; i<this.max_players; i++){
-      raw_income[i] = 0;
+      income[i] = 0;
       let areas = this.get_areas(i+1);
       for (let j=0; j<areas.length; j++){
         let area = areas[j];
-        for (let k=0; k<area.length; k++){
-          if (this.board[area[i]].item == 'farm'){
-            raw_income[i] += 4;
-          }
-        }
-        raw_income[i] += area.length;
+        let result = this.get_money_status(area);
+        //[bank, income, castle_index]
+        income[i] += result[1];
       }
     }
-    return(raw_income);
+    return(income);
   }
 
   this.check_winner = function(){
@@ -699,7 +699,7 @@ this.Game = function(board, size_x, size_y, max_players){
       let temp_areatile = this.board[area[i]];
       // tiles adjacent to area
       let temp_neighbors = this.get_neighbor_tiles(area[i]);
-      for (j in temp_neighbors){
+      for (let j in temp_neighbors){
         if (!available_tiles.includes(temp_neighbors[j]) && this.board[temp_neighbors[j]].color != temp_areatile.color){
           let tile_defence_rank = this.get_defence_rank(temp_neighbors[j]);
           if (rank == 3 || tile_defence_rank < rank) {
@@ -930,8 +930,8 @@ this.Game = function(board, size_x, size_y, max_players){
   },
   
   this.index_to_coord = function(index){
-    x = Math.floor(index/this.size_y);
-    y = index%this.size_y;
+    let x = Math.floor(index/this.size_y);
+    let y = index%this.size_y;
     return([x,y]);
   },
   
@@ -939,7 +939,7 @@ this.Game = function(board, size_x, size_y, max_players){
     return(coord[0]*this.size_y + coord[1]);
   }
 
-  this.raw_income = this.get_raw_income();
+  this.public_income = this.get_income();
 }
 
 };

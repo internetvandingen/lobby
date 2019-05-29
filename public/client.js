@@ -150,8 +150,8 @@ var size_y = 0;
 var selected = null;
 var message = '';
 var game_over = false;
-var raw_income = [];
-var show_raw_income = false;
+var public_income = [];
+var show_public_income = false;
 
 // -------------------------------------------------  socket communication ------------------------------------------------- 
 socket.on('antiyoy image', function(info) {
@@ -185,7 +185,7 @@ socket.on('antiyoy state', function(state) {
   message = state.msg;
   selected = state.selected;
   current_players_turn = state.current_players_turn;
-  raw_income = state.raw_income;
+  public_income = state.public_income;
 });
 
 function clicked_gui_resign(){    socket.emit('antiyoy resign');             }
@@ -246,7 +246,7 @@ function click_move(x, y){
 function click_end(){
   let x = pos_last[0], y = pos_last[1];
   pos_last = null;
-  show_raw_income = false;
+  show_public_income = false;
   if (pos_moved){
     pos_moved = false;
   } else {
@@ -269,7 +269,7 @@ function click_end(){
         selected = null;
       }
     } else if (y<size_gui_icon && x<size_gui_icon){
-      show_raw_income = true;
+      show_public_income = true;
     } else if (x>canvas.width-size_gui_icon){
       if (y<size_gui_icon){
         // toggle display size
@@ -374,20 +374,20 @@ function draw_state(state) {
   
   // draw gui
   context.drawImage(images[display_size]['coin'], 0, 0, size_gui_icon, size_gui_icon);
-  if(show_raw_income){
+  if(show_public_income){
     context.beginPath();
-    context.rect(size_gui_icon, size_gui_icon, canvas.width/5, size_gui_font*(0.3+raw_income.length));
+    context.rect(size_gui_icon, size_gui_icon, canvas.width/5, size_gui_font*(0.3+public_income.length));
     context.fillStyle = "white";
     context.fill();
     let max_inc = 1;
-    for (let i=0; i<raw_income.length; i++){if(raw_income[i]>max_inc){max_inc = raw_income[i];}}
-    for (let i=0; i<raw_income.length; i++){
+    for (let i=0; i<public_income.length; i++){if(public_income[i]>max_inc){max_inc = public_income[i];}}
+    for (let i=0; i<public_income.length; i++){
       context.fillStyle = colors[i+1];
-      context.fillText(raw_income[i], size_gui_icon+size_gui_font, size_gui_icon+(i+1)*size_gui_font);
+      context.fillText(public_income[i], size_gui_icon+size_gui_font, size_gui_icon+(i+1)*size_gui_font);
       context.beginPath();
       context.rect(size_gui_icon+size_gui_font*2,
                    size_gui_icon+(i+0.15)*size_gui_font,
-                   (canvas.width/5-size_gui_font*5/2)*raw_income[i]/max_inc,
+                   (canvas.width/5-size_gui_font*5/2)*public_income[i]/max_inc,
                    size_gui_font*0.9);
       context.fillStyle = colors[i+1];
       context.fill()
