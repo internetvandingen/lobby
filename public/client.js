@@ -84,6 +84,8 @@ $(function () {
     $('ul').empty();
     $('canvas').hide();
     $('#lobby').show();
+    clearInterval(antiyoy_interval);
+    antiyoy_interval = null;
     socket.emit('leave game');     
   });
 
@@ -152,6 +154,7 @@ var message = '';
 var game_over = false;
 var public_income = [];
 var show_public_income = false;
+var antiyoy_interval;
 
 // -------------------------------------------------  socket communication ------------------------------------------------- 
 socket.on('antiyoy image', function(info) {
@@ -161,9 +164,6 @@ socket.on('antiyoy image', function(info) {
     images[info.image_size][info.img_name] = img_temp;
   }
   if (Object.keys(images[0]).length+Object.keys(images[1]).length+Object.keys(images[2]).length == 3*19){
-    setInterval(function() {
-      draw_state(hexboard);
-    }, 1000 / refreshrate);
     image_recieved = true;
   }
 });
@@ -171,6 +171,9 @@ socket.on('antiyoy image', function(info) {
 socket.on('antiyoy player', function(id) {
   player_id = id;
   prefix_player_id = 'p';
+  antiyoy_interval = setInterval(function() {
+    draw_state(hexboard);
+  }, 1000 / refreshrate);
 });
 
 socket.on('antiyoy spectator', function(id) {
