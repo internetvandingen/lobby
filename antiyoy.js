@@ -447,19 +447,15 @@ this.Game = function(board, size_x, size_y, max_players){
     }
 
     // Send images only when connecting
-    for (let image_size=0;image_size<3;image_size++){
-      let postfix = ['_lowest', '_low', ''][image_size];
-      let image_names = {'coin':0, 'end_turn':0, 'exclamation_mark':0, 'undo':0, 'castle':0, 'farm':2, 'grave':0, 'house':0, 'man':3, 'palm':0, 'pine':0, 'tower':1, 'resign':0};
-      for (let image_name in image_names){
-        for (let i=0; i<=image_names[image_name];i++){
-          let image_number = '';
-          if (image_names[image_name] != 0){
-            image_number = i;
-          }
-
-          let filename = image_name+image_number+postfix+'.png';
-          this.emit_image(socket, filename, image_name, image_number, image_size);
+    let image_names = {'coin':0, 'end_turn':0, 'exclamation_mark':0, 'undo':0, 'castle':0, 'farm':2, 'grave':0, 'house':0, 'man':3, 'palm':0, 'pine':0, 'tower':1, 'resign':0};
+    for (let image_name in image_names){
+      for (let i=0; i<=image_names[image_name];i++){
+        let image_number = '';
+        if (image_names[image_name] != 0){
+          image_number = i;
         }
+        let filename = image_name+image_number+'.png';
+        this.emit_image(socket, filename, image_name, image_number);
       }
     }
 
@@ -482,9 +478,9 @@ this.Game = function(board, size_x, size_y, max_players){
 
   // ---------------------------------- lib ---------------------------------- 
 
-  this.emit_image = function(socket, filename, image_name, image_number, image_size){
+  this.emit_image = function(socket, filename, image_name, image_number){
     fs.readFile( __dirname + '/public/assets/'+filename, function(err, buf){
-      socket.emit('antiyoy image', {image: true, img_name:image_name+image_number, buffer: buf.toString('base64'), image_size:image_size});
+      socket.emit('antiyoy image', {image: true, img_name:image_name+image_number, buffer: buf.toString('base64')});
   //    console.log('image sent: '+image_name+image_number);
     });
   }

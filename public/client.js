@@ -8,6 +8,7 @@ var context = canvas.getContext('2d');
 
 // variables: canvas
 var display_size = 0; // 0, 1, 2 => lowest(small), low(medium), normal (large)
+var image_height = [32, 64, 128];
 var background_color = "#28286d";
 var colors = ['grey', '#d7263d', '#1b998b', '#c5d86d', '#624763', '#5158bb', '#f46036'] //fitting
 
@@ -140,7 +141,7 @@ var pos_last = null;
 var pos_offset = [3*hex_r, size_gui_icon+hex_r];
 var pos_moved = false;
 
-var images = {0:{}, 1:{}, 2:{}};
+var images = {};
 var background_color = "#28286d";
 var refreshrate = 60;
 var image_recieved = false;
@@ -161,9 +162,9 @@ socket.on('antiyoy image', function(info) {
   if (info.image) {
     let img_temp = new Image();
     img_temp.src = 'data:image/png;base64,' + info.buffer;
-    images[info.image_size][info.img_name] = img_temp;
+    images[info.img_name] = img_temp;
   }
-  if (Object.keys(images[0]).length+Object.keys(images[1]).length+Object.keys(images[2]).length == 3*19){
+  if (Object.keys(images).length == 19){
     image_recieved = true;
   }
 });
@@ -340,16 +341,19 @@ function draw_state(state) {
 //context.fillText(key, x_coord, y_coord);
     if (state[key].item != 'none'){
       // draw item on hex tile
-      let img = images[display_size][state[key].item+state[key].rank];
+      let img = images[state[key].item+state[key].rank];
+      let size_pixels = image_height[display_size];
       context.drawImage(img,
-                        x_coord - img.width/2,
-                        y_coord - img.height/7*4);
+                        x_coord - size_pixels/2,
+                        y_coord - size_pixels/7*4,
+                        size_pixels,
+                        size_pixels);
       if (current_players_turn == player_id   &&
           state[key].color == player_id       &&
           ((state[key].item=='man' && state[key].can_move)  ||  state[key].bank >= 10)
          ){
         // draw exclamation mark for units/structures that have available actions
-        context.drawImage(images[display_size].exclamation_mark, 
+        context.drawImage(images.exclamation_mark, 
                           x_coord - hex_r*0.65,
                           y_coord - hex_r, 
                           hex_r/2,
@@ -376,7 +380,7 @@ function draw_state(state) {
   context.fillText(message, canvas.width/2, size_gui_icon/2+size_gui_font/3);
   
   // draw gui
-  context.drawImage(images[display_size]['coin'], 0, 0, size_gui_icon, size_gui_icon);
+  context.drawImage(images['coin'], 0, 0, size_gui_icon, size_gui_icon);
   if(show_public_income){
     context.beginPath();
     context.rect(size_gui_icon, size_gui_icon, canvas.width/5, size_gui_font*(0.3+public_income.length));
@@ -414,13 +418,13 @@ function draw_state(state) {
           img_structure = (selected.item != 'farm' ? selected.item+selected.rank : 'house');
         }
       }
-      let img = images[display_size][img_structure];
+      let img = images[img_structure];
       context.drawImage(img,
                         canvas.width/3-size_gui_icon/2,
                         canvas.height-size_gui_icon,
                         size_gui_icon,
                         size_gui_icon);
-      img = images[display_size]['man'+img_unit_append];
+      img = images['man'+img_unit_append];
       context.drawImage(img,
                         canvas.width*2/3-size_gui_icon/2,
                         canvas.height-size_gui_icon,
@@ -434,17 +438,17 @@ function draw_state(state) {
                        size_gui_icon,
                        size_gui_icon/2+size_gui_font/3);
     }
-    context.drawImage(images[display_size]['undo'], 
+    context.drawImage(images['undo'], 
                       0, //x
                       canvas.height-size_gui_icon,//y
                       size_gui_icon, //width
                       size_gui_icon);//height
-    context.drawImage(images[display_size]['end_turn'],
+    context.drawImage(images['end_turn'],
                       canvas.width-size_gui_icon,//x
                       canvas.height-size_gui_icon,//y
                       size_gui_icon,//width
                       size_gui_icon);//height
-    context.drawImage(images[display_size]['resign'],
+    context.drawImage(images['resign'],
                       canvas.width-size_gui_icon,//x
                       canvas.height/2-size_gui_icon/2,//y
                       size_gui_icon*0.71,//width
