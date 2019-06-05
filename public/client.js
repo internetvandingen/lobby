@@ -6,12 +6,6 @@ var prefix_player_id;
 // constants: canvas
 var context = canvas.getContext('2d');
 
-// variables: canvas
-var display_size = 0; // 0, 1, 2 => lowest(small), low(medium), normal (large)
-var image_height = [32, 64, 128];
-var background_color = "#28286d";
-var colors = ['grey', '#d7263d', '#1b998b', '#c5d86d', '#624763', '#5158bb', '#f46036'] //fitting
-
 // -------------------------------------------------  socket communication ------------------------------------------------- 
 var socket = io.connect({path: "/lobby/socket.io"});
 
@@ -130,11 +124,9 @@ var size_gui_icon = [40, 80, 120][display_size],
     size_gui_font = [25, 50, 80][display_size],
     hex_r = [22, 40, 80][display_size];
 
-var rbg = ['grey', '#0000ff', '#ff0000', '#00ff00', 'ff5000', '#ffcc00']  //default harsh colors
-var babycolors = ['grey', '#86bbd8', '#9ee493', '#d2ab99', '#be6e46', '#734b5e'] //babycolors
-var green = ['grey', '#854d27', '#352208', '#141204', '#463f1a', '#60492c'] //green shades
-var fitting = ['grey', '#d7263d', '#1b998b', '#c5d86d', '#624763', '#5158bb', '#f46036'] //fitting
-var colors = fitting;
+var image_height = [32, 64, 128];
+var colors =        ['grey',    '#f06043', '#4585e5', '#7df73f', '#2ef5e1', '#fdf836', '#e117d4', '#ffb416']
+var border_colors = ['#686767', '#e54d2e', '#2463ce', '#43b929', '#13dac4', '#e6c911', '#b90aae', '#f59109']
 
 var holdStart;
 var pos_last = null;
@@ -336,7 +328,8 @@ function draw_state(state) {
     x_coord = pos_offset[0]+hex_r*x*3/2;
     y_coord = pos_offset[1]+hex_r*y*Math.sqrt(3);
     // draw hexagon
-    draw_hex_tile(context, x_coord, y_coord, colors[state[key].color]);
+    let color_index = state[key].color;
+    draw_hex_tile(context, x_coord, y_coord, colors[color_index], border_colors[color_index]);
 //context.fillStyle = 'black';
 //context.fillText(key, x_coord, y_coord);
     if (state[key].item != 'none'){
@@ -362,8 +355,11 @@ function draw_state(state) {
     }
     if (state[key].highlighted) {
       // highlight hex tile
-      context.rect(x_coord-1, y_coord-1, 2, 2);
-      context.stroke();
+      let rect_width = Math.floor(hex_r/5);
+      context.beginPath();
+      context.fillStyle = 'black';
+      context.rect(x_coord-1, y_coord-1, rect_width, rect_width);
+      context.fill();
     }
   }
 
@@ -456,16 +452,17 @@ function draw_state(state) {
   }
 }
 
-function draw_hex_tile(context, x, y, color){
+function draw_hex_tile(context, x, y, color, border_color){
+  let lw = Math.floor(hex_r/10);
   context.beginPath();
-  context.moveTo(x + hex_r*Math.cos(0), 
-                 y + hex_r*Math.sin(0));
-  for (let i = 1; i <= 6;i += 1) {
-      context.lineTo (x + hex_r*Math.cos(i*2*Math.PI/6), 
-                      y + hex_r*Math.sin(i*2*Math.PI/6));
+  context.moveTo(x + (hex_r-lw)*Math.cos(0), 
+                 y + (hex_r-lw)*Math.sin(0));
+  for (let i = 1; i <= 7;i += 1) {
+      context.lineTo (x + (hex_r-lw)*Math.cos(i*2*Math.PI/6), 
+                      y + (hex_r-lw)*Math.sin(i*2*Math.PI/6));
   }
-  context.strokeStyle = "#000000";
-  context.lineWidth = 1;
+  context.strokeStyle = border_color;
+  context.lineWidth = lw*2;
   context.stroke();
   context.fillStyle = color;
   context.fill();

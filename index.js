@@ -126,7 +126,7 @@ io.on('connection', function(socket) {
 
   socket.on('leave game', function(){
     let id = players[socket.id].gameid
-    if(id>0 && Object.keys(lobby).includes(gameid)){
+    if(id>0 && Object.keys(lobby).includes(id)){
       let g = lobby[id];
       delete g.players[socket.id];
       g.player_count--;
