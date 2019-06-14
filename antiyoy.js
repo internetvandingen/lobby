@@ -352,6 +352,9 @@ this.Game = function(board, size_x, size_y, max_players){
     // broadcast state once for every player
     this.send_state_spec();
     this.send_state();
+    // send notification to player who needs to make a move
+    let socketid = getKeyByValue(this.players, this.current_players_turn);
+    io.to(socketid).emit('notify');
   }
 
   this.clicked_gui_undo = function(){

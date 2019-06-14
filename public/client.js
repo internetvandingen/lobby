@@ -2,6 +2,7 @@
 //var canvas = document.getElementById('canvas');
 var player_id;
 var prefix_player_id;
+var audio = new Audio('assets/notify.mp3');
 
 // constants: canvas
 var context = canvas.getContext('2d');
@@ -79,8 +80,6 @@ $(function () {
     $('ul').empty();
     $('canvas').hide();
     $('#lobby').show();
-    clearInterval(antiyoy_interval);
-    antiyoy_interval = null;
     socket.emit('leave game');     
   });
 
@@ -104,12 +103,16 @@ $(function () {
           })
         }
   });
+  $(window).on("resize", draw_state);
 
   socket.on('creation', function(index) {
     socket.emit('join', index);
   });
   socket.on('error_message', function(error_msg) {
     alert(error_msg);
+  });
+  socket.on('notify', function(){
+    audio.play();
   });
 });
 
@@ -135,7 +138,6 @@ var pos_moved = false;
 
 var images = {};
 var background_color = "#28286d";
-var refreshrate = 60;
 var image_recieved = false;
 
 // variables: game
@@ -147,7 +149,6 @@ var message = '';
 var game_over = false;
 var public_income = [];
 var show_public_income = false;
-var antiyoy_interval;
 
 // -------------------------------------------------  socket communication ------------------------------------------------- 
 socket.on('antiyoy image', function(info) {
@@ -158,15 +159,13 @@ socket.on('antiyoy image', function(info) {
   }
   if (Object.keys(images).length == 19){
     image_recieved = true;
+    draw_state();
   }
 });
 
 socket.on('antiyoy player', function(id) {
   player_id = id;
   prefix_player_id = 'p';
-  antiyoy_interval = setInterval(function() {
-    draw_state(hexboard);
-  }, 1000 / refreshrate);
 });
 
 socket.on('antiyoy spectator', function(id) {
@@ -182,6 +181,7 @@ socket.on('antiyoy state', function(state) {
   selected = state.selected;
   current_players_turn = state.current_players_turn;
   public_income = state.public_income;
+  draw_state();
 });
 
 function clicked_gui_resign(){    socket.emit('antiyoy resign');             }
@@ -234,8 +234,8 @@ function click_move(x, y){
     pos_offset[0] = pos_offset[0]+x-pos_last[0];
     pos_offset[1] = pos_offset[1]+y-pos_last[1];
     pos_last = [x,y];
-
     pos_moved = true;
+    draw_state();
   }
 }
 
@@ -273,6 +273,7 @@ function click_end(){
         size_gui_icon = [40, 80, 120][display_size];
         size_gui_font = [20, 50, 80][display_size];
         hex_r = [22, 40, 80][display_size];
+        draw_state();
       } else if (y<canvas.height/2+size_gui_icon/2 && y>canvas.height/2-size_gui_icon/2 && game_over==false){
         if (confirm('Are you sure you want to resign?')) {
           clicked_gui_resign();
@@ -311,7 +312,8 @@ function coord_to_index(coord){
   return(coord[0]*size_y + coord[1]);
 }
 
-function draw_state(state) {
+function draw_state() {
+  let state = hexboard;
   canvas.width = context.canvas.clientWidth;
   canvas.height = context.canvas.clientHeight;
 
@@ -450,6 +452,7 @@ function draw_state(state) {
                       size_gui_icon*0.71,//width
                       size_gui_icon);//height
   }
+  console.log('draw');
 }
 
 function draw_hex_tile(context, x, y, color, border_color){
