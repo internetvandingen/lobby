@@ -143,7 +143,6 @@ var pos_moved = false;
 
 var images = {};
 var background_color = "#28286d";
-var image_recieved = false;
 
 // variables: game
 var hexboard = {};
@@ -163,7 +162,6 @@ socket.on('antiyoy image', function(info) {
     images[info.img_name] = img_temp;
   }
   if (Object.keys(images).length == 19){
-    image_recieved = true;
     draw_state();
   }
 });
@@ -253,24 +251,30 @@ function click_end(){
   } else {
     if (y>canvas.height-size_gui_icon){
       if (x<size_gui_icon){
-        selected = null;	
+        // clicked undo
+        selected = null;
         clicked_gui_undo();
       } else if (x>canvas.width/3-size_gui_icon/2 && x<canvas.width/3+size_gui_icon/2) {
         if (selected != null){
+          // clicked structure
           clicked_gui_structure();
         }
       } else if (x>canvas.width*2/3-size_gui_icon/2 && x<canvas.width*2/3+size_gui_icon/2){
         if (selected != null){
+          // clicked gui unit
           clicked_gui_unit();
         }
       } else if (x>canvas.width-size_gui_icon){
+        // clicked end turn
         selected = null;
         clicked_gui_end_turn();
       } else {
         selected = null;
       }
     } else if (y<size_gui_icon && x<size_gui_icon){
+      // clicked money
       show_public_income = true;
+      draw_state();
     } else if (x>canvas.width-size_gui_icon){
       if (y<size_gui_icon){
         // toggle display size
@@ -343,21 +347,29 @@ function draw_state() {
       // draw item on hex tile
       let img = images[state[key].item+state[key].rank];
       let size_pixels = image_height[display_size];
-      context.drawImage(img,
-                        x_coord - size_pixels/2,
-                        y_coord - size_pixels/7*4,
-                        size_pixels,
-                        size_pixels);
+      try{
+        context.drawImage(img,
+                          x_coord - size_pixels/2,
+                          y_coord - size_pixels/7*4,
+                          size_pixels,
+                          size_pixels);
+      } catch(TypeError){
+        console.log('Not all images are loaded!');
+      }
       if (current_players_turn == player_id   &&
           state[key].color == player_id       &&
           ((state[key].item=='man' && state[key].can_move)  ||  state[key].bank >= 10)
          ){
         // draw exclamation mark for units/structures that have available actions
-        context.drawImage(images.exclamation_mark, 
-                          x_coord - hex_r*0.65,
-                          y_coord - hex_r, 
-                          hex_r/2,
-                          hex_r);
+        try{
+          context.drawImage(images.exclamation_mark, 
+                            x_coord - hex_r*0.65,
+                            y_coord - hex_r, 
+                            hex_r/2,
+                            hex_r);
+        } catch(TypeError){
+          console.log('Not all images are loaded!');
+        }
       }
     }
     if (state[key].highlighted) {
@@ -383,7 +395,11 @@ function draw_state() {
   context.fillText(message, canvas.width/2, size_gui_icon/2+size_gui_font/3);
   
   // draw gui
-  context.drawImage(images['coin'], 0, 0, size_gui_icon, size_gui_icon);
+  try{
+    context.drawImage(images['coin'], 0, 0, size_gui_icon, size_gui_icon);
+  } catch(TypeError){
+    console.log('Not all images are loaded!');
+  }
   if(show_public_income){
     context.beginPath();
     context.rect(size_gui_icon, size_gui_icon, canvas.width/5, size_gui_font*(0.3+public_income.length));
@@ -395,10 +411,11 @@ function draw_state() {
       context.fillStyle = colors[i+1];
       context.fillText(public_income[i], size_gui_icon+size_gui_font, size_gui_icon+(i+1)*size_gui_font);
       context.beginPath();
-      context.rect(size_gui_icon+size_gui_font*2,
-                   size_gui_icon+(i+0.15)*size_gui_font,
-                   (canvas.width/5-size_gui_font*5/2)*public_income[i]/max_inc,
-                   size_gui_font*0.9);
+      let public_income_max = Math.max(0.05, public_income[i]);
+      context.rect(size_gui_icon+size_gui_font*2, // x
+                   size_gui_icon+(i+0.15)*size_gui_font, // y
+                   (canvas.width/5-size_gui_font*5/2)*public_income_max/max_inc,  // width
+                   size_gui_font*0.9);  // height
       context.fill()
     }
   }
@@ -422,17 +439,21 @@ function draw_state() {
         }
       }
       let img = images[img_structure];
-      context.drawImage(img,
-                        canvas.width/3-size_gui_icon/2,
-                        canvas.height-size_gui_icon,
-                        size_gui_icon,
-                        size_gui_icon);
-      img = images['man'+img_unit_append];
-      context.drawImage(img,
-                        canvas.width*2/3-size_gui_icon/2,
-                        canvas.height-size_gui_icon,
-                        size_gui_icon,
-                        size_gui_icon);
+      try {
+        context.drawImage(img,
+                          canvas.width/3-size_gui_icon/2,
+                          canvas.height-size_gui_icon,
+                          size_gui_icon,
+                          size_gui_icon);
+        img = images['man'+img_unit_append];
+        context.drawImage(img,
+                          canvas.width*2/3-size_gui_icon/2,
+                          canvas.height-size_gui_icon,
+                          size_gui_icon,
+                          size_gui_icon);
+      } catch(TypeError){
+        console.log('Not all images are loaded!');
+      }
       // display money situation
       context.fillStyle = 'white';
       context.textAlign = "left";
@@ -441,23 +462,26 @@ function draw_state() {
                        size_gui_icon,
                        size_gui_icon/2+size_gui_font/3);
     }
-    context.drawImage(images['undo'], 
-                      0, //x
-                      canvas.height-size_gui_icon,//y
-                      size_gui_icon, //width
-                      size_gui_icon);//height
-    context.drawImage(images['end_turn'],
-                      canvas.width-size_gui_icon,//x
-                      canvas.height-size_gui_icon,//y
-                      size_gui_icon,//width
-                      size_gui_icon);//height
-    context.drawImage(images['resign'],
-                      canvas.width-size_gui_icon,//x
-                      canvas.height/2-size_gui_icon/2,//y
-                      size_gui_icon*0.71,//width
-                      size_gui_icon);//height
+    try {
+      context.drawImage(images['undo'], 
+                        0, //x
+                        canvas.height-size_gui_icon,//y
+                        size_gui_icon, //width
+                        size_gui_icon);//height
+      context.drawImage(images['end_turn'],
+                        canvas.width-size_gui_icon,//x
+                        canvas.height-size_gui_icon,//y
+                        size_gui_icon,//width
+                        size_gui_icon);//height
+      context.drawImage(images['resign'],
+                        canvas.width-size_gui_icon,//x
+                        canvas.height/2-size_gui_icon/2,//y
+                        size_gui_icon*0.71,//width
+                        size_gui_icon);//height
+    } catch(TypeError){
+      console.log('Not all images are loaded!');
+    }
   }
-  console.log('draw');
 }
 
 function draw_hex_tile(context, x, y, color, border_color){
