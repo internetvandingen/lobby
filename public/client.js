@@ -161,9 +161,7 @@ socket.on('antiyoy image', function(info) {
     img_temp.src = 'data:image/png;base64,' + info.buffer;
     images[info.img_name] = img_temp;
   }
-  if (Object.keys(images).length == 19){
-    draw_state();
-  }
+  draw_state();
 });
 
 socket.on('antiyoy player', function(id) {
@@ -245,7 +243,6 @@ function click_move(x, y){
 function click_end(){
   let x = pos_last[0], y = pos_last[1];
   pos_last = null;
-  show_public_income = false;
   if (pos_moved){
     pos_moved = false;
   } else {
@@ -273,8 +270,7 @@ function click_end(){
       }
     } else if (y<size_gui_icon && x<size_gui_icon){
       // clicked money
-      show_public_income = true;
-      draw_state();
+      show_public_income = !show_public_income;
     } else if (x>canvas.width-size_gui_icon){
       if (y<size_gui_icon){
         // toggle display size
@@ -282,7 +278,6 @@ function click_end(){
         size_gui_icon = [40, 80, 120][display_size];
         size_gui_font = [20, 50, 80][display_size];
         hex_r = [22, 40, 80][display_size];
-        draw_state();
       } else if (y<canvas.height/2+size_gui_icon/2 && y>canvas.height/2-size_gui_icon/2 && game_over==false){
         if (confirm('Are you sure you want to resign?')) {
           clicked_gui_resign();
@@ -307,6 +302,7 @@ function click_end(){
       }
     }
   }
+  draw_state();
 }
 
 // ------------------------------------------------- draw functions -------------------------------------------------
@@ -341,8 +337,11 @@ function draw_state() {
     // draw hexagon
     let color_index = state[key].color;
     draw_hex_tile(context, x_coord, y_coord, colors[color_index], border_colors[color_index]);
-//context.fillStyle = 'black';
-//context.fillText(key, x_coord, y_coord);
+
+    // don't drawin tile index
+    //context.fillStyle = 'black';
+    //context.fillText(key, x_coord, y_coord);
+
     if (state[key].item != 'none'){
       // draw item on hex tile
       let img = images[state[key].item+state[key].rank];
@@ -354,7 +353,7 @@ function draw_state() {
                           size_pixels,
                           size_pixels);
       } catch(TypeError){
-        console.log('Not all images are loaded!');
+//        console.log('Not all images are loaded!');
       }
       if (current_players_turn == player_id   &&
           state[key].color == player_id       &&
@@ -368,7 +367,7 @@ function draw_state() {
                             hex_r/2,
                             hex_r);
         } catch(TypeError){
-          console.log('Not all images are loaded!');
+//          console.log('Not all images are loaded!');
         }
       }
     }
@@ -384,13 +383,18 @@ function draw_state() {
 
   // display message and player# in screen
   context.font = size_gui_font+"px Arial";
-  context.fillStyle = 'white';
-
   // display player number right corner
   context.textAlign = "right";
-  context.fillText(prefix_player_id+player_id, canvas.width-size_gui_font/3, size_gui_icon/2+size_gui_font/3);
-
+  let p_text = prefix_player_id+player_id;
+  let p_x = canvas.width-size_gui_font/3;
+  let p_y = size_gui_icon/2+size_gui_font/3;
+  context.lineWidth = size_gui_icon/20;
+  context.strokeStyle = 'black';
+  context.strokeText(p_text, p_x, p_y)
+  context.fillStyle = colors[player_id];
+  context.fillText(p_text, p_x, p_y);
   // display message
+  context.fillStyle = 'white';
   context.textAlign = "center";
   context.fillText(message, canvas.width/2, size_gui_icon/2+size_gui_font/3);
   
@@ -398,7 +402,7 @@ function draw_state() {
   try{
     context.drawImage(images['coin'], 0, 0, size_gui_icon, size_gui_icon);
   } catch(TypeError){
-    console.log('Not all images are loaded!');
+//    console.log('Not all images are loaded!');
   }
   if(show_public_income){
     context.beginPath();
@@ -452,7 +456,7 @@ function draw_state() {
                           size_gui_icon,
                           size_gui_icon);
       } catch(TypeError){
-        console.log('Not all images are loaded!');
+//        console.log('Not all images are loaded!');
       }
       // display money situation
       context.fillStyle = 'white';
@@ -479,7 +483,7 @@ function draw_state() {
                         size_gui_icon*0.71,//width
                         size_gui_icon);//height
     } catch(TypeError){
-      console.log('Not all images are loaded!');
+//      console.log('Not all images are loaded!');
     }
   }
 }
