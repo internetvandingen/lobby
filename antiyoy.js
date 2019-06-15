@@ -82,7 +82,9 @@ this.Game = function(board, size_x, size_y, max_players){
   this.board = board;
   this.size_x = size_x;
   this.size_y = size_y;
-  this.players = {};
+  this.players = {}; // players[socketid] = integer (player number in game)
+  this.player_names = {}; // player_names[player_nr] = name
+  this.player_count = 0;
   this.defeated_players = [];
   this.spectators = {};
   this.max_players = max_players;
@@ -403,7 +405,7 @@ this.Game = function(board, size_x, size_y, max_players){
   }
 
   // ---------------------------------- from index ---------------------------------- 
-  this.new_player = function(socket){
+  this.new_player = function(socket, name){
     // Assign player number on connecting
     if (Object.keys(this.players).length < this.max_players){
       let current_players = [];
@@ -413,9 +415,11 @@ this.Game = function(board, size_x, size_y, max_players){
       for (let i=1; i<=this.max_players; i++){
         if (!current_players.includes(i)){
           this.players[socket.id] = i;
+          this.player_names[i] = name;
           break;
         }
       }
+      this.player_count++;
       socket.emit('antiyoy player', this.players[socket.id]);
       if (this.players[socket.id] == this.current_players_turn){
         // broadcast state once for every other player
@@ -449,6 +453,13 @@ this.Game = function(board, size_x, size_y, max_players){
       }
     }
 
+    this.player_leave = function(socketid){
+      let id = this.players[socketid];
+      delete this.player_names[id];
+      delete this.players[socketid];
+      this.player_count--;
+    }
+
     // Send images only when connecting
     let image_names = {'coin':0, 'end_turn':0, 'exclamation_mark':0, 'undo':0, 'castle':0, 'farm':2, 'grave':0, 'house':0, 'man':3, 'palm':0, 'pine':0, 'tower':1, 'resign':0};
     for (let image_name in image_names){
@@ -464,7 +475,7 @@ this.Game = function(board, size_x, size_y, max_players){
 
   }
 
-  this.try_resign = function(socket){
+  this.try_resign = function(socket, player_name){
     if (this.players.hasOwnProperty(socket.id)){
       let p = this.players[socket.id];
       if (p == this.current_players_turn){
@@ -474,7 +485,7 @@ this.Game = function(board, size_x, size_y, max_players){
         this.defeated_players.push(p);
         this.check_winner();
       }
-      io.sockets.in('room'+this.index).emit('chat message', {id:'player '+p, message:' has resigned!', color:p});
+      io.sockets.in('room'+this.index).emit('chat message', {id:player_name, message:' has resigned!', color:p});
     }
   }
 
@@ -507,7 +518,7 @@ this.Game = function(board, size_x, size_y, max_players){
     let winner = this.get_winner();
     if (winner != null){
       // game is over
-      io.sockets.in('room'+this.index).emit('chat message', {id:'player '+winner, message:' has won!', color:winner});
+      io.sockets.in('room'+this.index).emit('chat message', {id:this.player_names[winner], message:' has won!', color:winner});
       this.board_last_turn = this.parse_board(this.board);
       this.send_state_spec();
       return(true);

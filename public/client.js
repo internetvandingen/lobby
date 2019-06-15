@@ -7,9 +7,14 @@ var audio = new Audio('assets/notify.mp3');
 // constants: canvas
 var context = canvas.getContext('2d');
 
-// -------------------------------------------------  socket communication ------------------------------------------------- 
-var socket = io.connect({path: "/lobby/socket.io"});
+var player_name = '';
+while($.trim(player_name.replace(/[^a-z0-9\s]/gi, '')) == ''){
+  player_name = prompt("Please enter your name");
+}
+player_name = $.trim(player_name.replace(/[^a-z0-9\s]/gi, ''));
 
+// -------------------------------------------------  socket communication ------------------------------------------------- 
+var socket = io.connect({path: "/lobby/socket.io", query: 'player_name='+player_name});
 socket.on('player', function(id) {
   player_id = id;
   prefix_player_id = 'p';

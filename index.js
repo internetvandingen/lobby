@@ -14,6 +14,17 @@ var server  = app.listen(8000);
 
 var io = socketIO(server, {path: '/lobby/socket.io'});
 
+// extract players name
+io.use(function(socket, next){
+    // return the result of next() to accept the connection.
+    let pname = socket.handshake.query.player_name;
+    if (typeof pname !== 'undefined' && pname && pname.toString().replace(/[^a-z0-9\s]/gi, '').trim() !== '') {
+        players[socket.id] = {'id':0, 'gameid':0, 'pname':pname};
+        return next();
+    }
+    // call next() with an Error if you need to reject the connection.
+    next(new Error('Name error'));
+});
 
 app.get("/lobby/", function(req, res) {
   res.sendFile( __dirname + "/public/index.html" );
@@ -25,7 +36,7 @@ var Antiyoy = require('./antiyoy');
 var antiyoy = new Antiyoy(io);
 
 var max_nr_players = 50;
-var players = {}; // {'id':#, 'gameid':#, 'pname':'player 1'}
+var players = {}; // object[socket.id] = {playernumber:#, gameid:#, pname:'Unnamed'}
 var lobby = {}; // {'gameid': Game object}
 
 // rooms: 0 = lobby, 1-inf = game id
@@ -49,7 +60,6 @@ function add_game(game_info){
     lobby[index] = new antiyoy.Game(board, size_x, size_y, max_players);
   
     lobby[index].index = index;
-    lobby[index].player_count = 0;
     lobby[index].name = name;
     return(index);
   } else {
@@ -67,19 +77,9 @@ function check_empty(gameid){
 io.on('connection', function(socket) {
   // Assign player number on connecting
   if (Object.keys(players).length < max_nr_players){
-    let current_players = [];
-    for (let i in players){
-      current_players.push(players[i].id);
-    }
-    for (let i=1; i<=max_nr_players; i++){
-      if (!current_players.includes(i)){
-        players[socket.id] = {'id':i, 'gameid':0, 'pname':'player '+i};
-        break;
-      }
-    }
     socket.emit('player', players[socket.id].id);
     socket.join('room0');
-    io.sockets.in('room0').emit('chat message', {id:'player '+players[socket.id].id, message:' connected', color:players[socket.id].id});
+    io.sockets.in('room0').emit('chat message', {id:players[socket.id].pname, message:' connected', color:players[socket.id].id});
   } else {
     // disallow player and disconnect
     socket.emit('chat message', {id:'', message:'Lobby is full! ('+max_nr_players+')', color:0});
@@ -101,14 +101,17 @@ io.on('connection', function(socket) {
       if(g.player_count < g.max_players){
         socket.emit('join accepted', gameid);
         socket.emit('chat message', {id:'Server: ', message:'You are now in game '+gameid, color:0});
+
+        g.new_player(socket, players[socket.id].pname);
+        players[socket.id].gameid = gameid;
+        let p_color_id = g.players[socket.id];
+        players[socket.id].id = p_color_id;
         io.sockets.in('room'+gameid).emit('chat message',
-                                          {id:'player '+players[socket.id].id, message:' joined', color:players[socket.id].id});
+                                          {id:players[socket.id].pname, message:' joined', color:p_color_id});
         socket.join('room'+gameid);
         socket.leave('room0');
-
-        g.new_player(socket);
-        players[socket.id].gameid = gameid;
-        g.player_count++;
+        g.send_state_spec();
+        g.send_state();
       }
     }
     io.sockets.in('room0').emit('refresh lobby', lobby);
@@ -128,12 +131,13 @@ io.on('connection', function(socket) {
     let id = players[socket.id].gameid
     if(id>0 && Object.keys(lobby).includes(id)){
       let g = lobby[id];
-      delete g.players[socket.id];
-      g.player_count--;
-      players[socket.id].gameid = 0;
       socket.emit('chat message', {id:'Server: ', message:'You are now in the lobby', color:0});
       socket.leave('room'+g.index);
+      io.sockets.in('room'+id).emit('chat message', {id:players[socket.id].pname, message:' left the game', color:g.players[socket.id]});
       socket.join('room0');
+      g.player_leave(socket.id);
+      players[socket.id].gameid = 0;
+      players[socket.id].id = 0;
       check_empty(g.index);
       io.sockets.in('room0').emit('refresh lobby', lobby);
     }
@@ -142,12 +146,11 @@ io.on('connection', function(socket) {
   socket.on('disconnect', function() {
     if (Object.keys(players).includes(socket.id)){
       let p = players[socket.id];
-      io.sockets.in('room'+p.gameid).emit('chat message', {id:'player '+p.id, message:' disconnected', color:players[socket.id].id});
+      io.sockets.in('room'+p.gameid).emit('chat message', {id:p.pname, message:' disconnected', color:players[socket.id].id});
       if(p.gameid != 0 && Object.keys(lobby).includes(p.gameid)){
         let g = lobby[p.gameid];
-        delete g.players[socket.id];
-        g.player_count--;
-        g.try_resign(socket);
+        g.try_resign(socket, players[socket.id].pname);
+        g.player_leave(socket.id);
         check_empty(g.index);
       }
       delete players[socket.id];
@@ -220,7 +223,7 @@ io.on('connection', function(socket) {
     let gameindex = players[socket.id].gameid;
     let g = lobby[gameindex];
     if (g instanceof antiyoy.Game){
-      g.try_resign(socket);
+      g.try_resign(socket, players[socket.id].pname);
     }
   });
   // ------------------------------------------------- END antiyoy ------------------------------------------------- 
@@ -230,7 +233,7 @@ io.on('connection', function(socket) {
 
 function recieved_chat_message(msg, socketid){
   if (msg != ''){
-    let temp_name = Object.keys(players).includes(socketid) ? 'player '+players[socketid].id : 'spectator '+spectators[socketid] ;
+    let temp_name = Object.keys(players).includes(socketid) ? players[socketid].pname : 'spectator' ;
     let roomid = players[socketid].gameid;
     io.sockets.in('room'+roomid).emit('chat message', {id:temp_name+': ', message:msg, color:players[socketid].id});
   }
