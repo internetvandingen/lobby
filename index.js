@@ -69,8 +69,12 @@ function add_game(game_info){
 function check_empty(gameid){
   if( lobby[gameid].player_count == 0 ){
     delete lobby[gameid];
-    io.sockets.in('room0').emit('refresh lobby', lobby);
+    io.sockets.in('room0').emit('refresh lobby', get_refresh_lobby());
   }
+}
+
+function get_refresh_lobby(){
+  return({lobby:lobby, nr_players:Object.keys(players).length});
 }
 
 io.on('connection', function(socket) {
@@ -90,7 +94,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('refresh lobby', function(){
-    socket.emit('refresh lobby', lobby);
+    socket.emit('refresh lobby', get_refresh_lobby());
   });
 
   socket.on('join', function(gameid){
@@ -113,13 +117,13 @@ io.on('connection', function(socket) {
         g.send_state();
       }
     }
-    io.sockets.in('room0').emit('refresh lobby', lobby);
+    io.sockets.in('room0').emit('refresh lobby', get_refresh_lobby());
   });
 
   socket.on('new game', function(new_game_info){
     let result = add_game(new_game_info);
     if (typeof(result) == 'number') {
-      io.sockets.in('room0').emit('refresh lobby', lobby);
+      io.sockets.in('room0').emit('refresh lobby', get_refresh_lobby());
       socket.emit('creation', result);
     } else {
       socket.emit('error_message', result);
@@ -138,7 +142,7 @@ io.on('connection', function(socket) {
       players[socket.id].gameid = 0;
       players[socket.id].id = 0;
       check_empty(g.index);
-      io.sockets.in('room0').emit('refresh lobby', lobby);
+      io.sockets.in('room0').emit('refresh lobby', get_refresh_lobby());
     }
   });
 

@@ -48,7 +48,13 @@ $(function () {
   });
 
 // -------------------------------------------------  lobby communication ------------------------------------------------- 
-  socket.on('refresh lobby', function(lobby) {
+  socket.on('refresh lobby', function(data) {
+    // update nr of players connected
+    let nr_players = data.nr_players;
+    $('.lobby_players').text('players ('+nr_players+')');
+    console.log(nr_players);
+
+    let lobby = data.lobby;
     let keys = Object.keys(lobby);
     // remove all rows in table
     $('.tbody').empty();
