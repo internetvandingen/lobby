@@ -4,7 +4,6 @@ var express = require('express');
 var fs = require('fs');
 var path = require('path');
 var http = require('http');
-var path = require('path');
 var socketIO = require('socket.io');
 
 var app = express();
@@ -12,7 +11,7 @@ app.set('strict routing', true);
 
 var server  = app.listen(8000);
 
-var io = socketIO(server, {path: '/lobby/socket.io'});
+var io = socketIO(server, {path: '/lobby/socket.io', pingInterval: 5000});
 
 // extract players name
 io.use(function(socket, next){

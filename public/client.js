@@ -1,8 +1,10 @@
 // constants: general
-//var canvas = document.getElementById('canvas');
 var player_id;
 var prefix_player_id;
 var audio = new Audio('assets/notify.mp3');
+var latency = '';
+var disc_timeout;
+
 
 // constants: canvas
 var context = canvas.getContext('2d');
@@ -59,7 +61,7 @@ $(function () {
         .append($('<div class="el">').append($('<i class="material-icons">').text('keyboard_arrow_down')))
         .append($('<div class="clear">'))
       );
-      $('.tbody').append($('<div class="info">')
+      $('.tbody').append($('<div class="gameinfo">')
         .append($('<div class="join button">').text('Join'))
         .append($('<div class="map">').text(lobby[keys[i]].map))
         .append($('<div class="clear">'))
@@ -118,6 +120,13 @@ $(function () {
   });
   socket.on('notify', function(){
     audio.play();
+  });
+  socket.on('pong', function(pong){
+    let pong_el = $('.menu .menu_item span');
+    pong_el.text(pong+' ms');
+    // refresh disconnected check
+    clearTimeout(disc_timeout);
+    disc_timeout = setTimeout(function(){pong_el.text('disc.');}, 10000)
   });
 });
 
