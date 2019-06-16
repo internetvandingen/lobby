@@ -83,11 +83,16 @@ $(function () {
 
   $('.refresh').click(function() { socket.emit('refresh lobby'); });
   $('.new').click(function() { $("#dialog").dialog('open'); });
-  $('.return').click(function() {
+  $('.return_icon').click(function() {
     $('ul').empty();
     $('canvas').hide();
     $('#lobby').show();
     socket.emit('leave game');     
+  });
+
+  $('.menu_info_icon').click(function(){
+    $('.menu_info').toggle();
+    $('ul').toggle();
   });
 
   $("#dialog").dialog({
@@ -122,7 +127,7 @@ $(function () {
     audio.play();
   });
   socket.on('pong', function(pong){
-    let pong_el = $('.menu .menu_item span');
+    let pong_el = $('.latency span');
     pong_el.text(pong+' ms');
     // refresh disconnected check
     clearTimeout(disc_timeout);

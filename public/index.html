@@ -19,7 +19,7 @@
         <div class='row'>
           <div class='el'>ID</div>
           <div class='el'>Name</div>
-          <div class='el'>players</div>
+          <div class='el lobby_players'>players</div>
           <div class='el refresh'><i class="material-icons">refresh</i></div>
           <div class='clear'></div>
         </div>
@@ -31,10 +31,18 @@
     <canvas id="canvas" style="display:none;"></canvas>
     <div id="chat">
       <div class='menu'>
-        <div class="menu_item"><i class='material-icons'>timer</i><span></span></div>
-        <div class="menu_item"><i class="material-icons return">close</i></div>
+        <div class="menu_item"><i class="material-icons menu_info_icon">info</i></div>
+        <div class="menu_item"><i class="material-icons latency">timer</i><span></span></div>
+        <div class="menu_item"><i class="material-icons return_icon">close</i></div>
       </div>
       <ul id="messages"></ul>
+      <div class='menu_info'>
+        <a href='https://play.google.com/store/apps/details?id=yio.tro.antiyoy.android' target='_blank'>Original game<a> by <a href='https://github.com/yiotro' target='_blank'>Yiotro</a>.<br>
+        Sprites by <a href='https://www.reddit.com/user/Paul123333' target='_blank'>Paul</a>.<br><br>
+        Build and tested for Firefox and Chrome browsers.<br><br>
+        Bugs or questions? Mail me at <a href = "mailto:lobby@lennartknoll.nl">lobby@lennartknoll.nl</a>.<br><br>
+        When in game, try clicking on the player number in the top right corner to change display size, or the dollar image in the top left corner to see everyone's current income next.
+      </div>
       <form action="">
         <input id="m" autocomplete="off" /><button>Send</button>
       </form>
