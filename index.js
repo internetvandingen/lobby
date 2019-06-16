@@ -163,6 +163,27 @@ io.on('connection', function(socket) {
   });
 
   // ------------------------------------------------- START antiyoy ------------------------------------------------- 
+
+  // Send images now (when connecting)
+  function emit_image(socket, filename, image_name, image_number){
+    fs.readFile( __dirname + '/public/assets/'+filename, function(err, buf){
+      socket.emit('antiyoy image', {image: true, img_name:image_name+image_number, buffer: buf.toString('base64')});
+  //    console.log('image sent: '+image_name+image_number);
+    });
+  }
+  let image_names = {'coin':0, 'end_turn':0, 'exclamation_mark':0, 'undo':0, 'castle':0, 'farm':2, 'grave':0, 'house':0, 'man':3, 'palm':0, 'pine':0, 'tower':1, 'resign':0};
+  for (let image_name in image_names){
+    for (let i=0; i<=image_names[image_name];i++){
+      let image_number = '';
+      if (image_names[image_name] != 0){
+        image_number = i;
+      }
+      let filename = image_name+image_number+'.png';
+      emit_image(socket, filename, image_name, image_number);
+    }
+  }
+
+
   socket.on('antiyoy undo', function() {
     let gameindex = players[socket.id].gameid;
     let g = lobby[gameindex];

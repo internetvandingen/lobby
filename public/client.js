@@ -52,7 +52,6 @@ $(function () {
     // update nr of players connected
     let nr_players = data.nr_players;
     $('.lobby_players').text('players ('+nr_players+')');
-    console.log(nr_players);
 
     let lobby = data.lobby;
     let keys = Object.keys(lobby);
@@ -130,7 +129,9 @@ $(function () {
     alert(error_msg);
   });
   socket.on('notify', function(){
-    audio.play();
+    if ($('.menu_info input.notify_sound').is(":checked")){
+      audio.play();
+    }
   });
   socket.on('pong', function(pong){
     let pong_el = $('.latency span');
