@@ -460,6 +460,10 @@ this.Game = function(board, size_x, size_y, max_players){
       delete this.player_names[id];
       delete this.players[socketid];
       this.player_count--;
+      if (this.player_count == 1){
+        let winner = this.players[Object.keys(this.players)[0]];
+        this.parse_winner(winner);
+      }
     }
 
   }
@@ -500,16 +504,20 @@ this.Game = function(board, size_x, size_y, max_players){
     let winner = this.get_winner();
     if (winner != null){
       // game is over
-      io.sockets.in('room'+this.index).emit('chat message', {id:this.player_names[winner], message:' has won!', color:winner});
-      this.board_last_turn = this.parse_board(this.board);
-      this.current_players_turn = 0; // current player to 0 so game loop stops
-      this.max_players = 0; // set max players to 0 so nobody can join
-      this.max_spectators = 0;
-      this.send_state_spec(winner);
+      this.parse_winner(winner);
       return(true);
     } else {
       return(false);
     }
+  }
+
+  this.parse_winner = function(winner){
+    io.sockets.in('room'+this.index).emit('chat message', {id:this.player_names[winner], message:' has won!', color:winner});
+    this.board_last_turn = this.parse_board(this.board);
+    this.current_players_turn = 0; // current player to 0 so game loop stops
+    this.max_players = 0; // set max players to 0 so nobody can join
+    this.max_spectators = 0;
+    this.send_state_spec(winner);
   }
 
   this.parse_board = function(board){
