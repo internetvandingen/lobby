@@ -397,7 +397,7 @@ this.Game = function(board, size_x, size_y, max_players){
       board:this.board,
       size_x:this.size_x,
       size_y:this.size_y,
-      msg:'',
+      msg:'Player '+this.current_players_turn+' is next.',
       selected:null,
       current_players_turn:this.current_players_turn,
       public_income:this.public_income

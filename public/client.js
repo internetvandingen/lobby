@@ -89,10 +89,12 @@ $(function () {
   $('.refresh').click(function() { socket.emit('refresh lobby'); });
   $('.new').click(function() { $("#dialog").dialog('open'); });
   $('.return_icon').click(function() {
-    $('ul').empty();
-    $('canvas').hide();
-    $('#lobby').show();
-    socket.emit('leave game');     
+    if (confirm('Are you sure you want to leave the game?')) {
+      $('ul').empty();
+      $('canvas').hide();
+      $('#lobby').show();
+      socket.emit('leave game');     
+    }
   });
 
   $('.menu_info_icon').click(function(){
