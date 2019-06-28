@@ -173,9 +173,9 @@ var size_x = 0;
 var size_y = 0;
 var selected = null;
 var message = '';
-var game_over = false;
 var public_income = [];
 var show_public_income = false;
+var current_players_turn = 0;
 
 // -------------------------------------------------  socket communication ------------------------------------------------- 
 socket.on('antiyoy image', function(info) {
@@ -301,10 +301,9 @@ function click_end(){
         size_gui_icon = [40, 80, 120][display_size];
         size_gui_font = [20, 50, 80][display_size];
         hex_r = [22, 40, 80][display_size];
-      } else if (y<canvas.height/2+size_gui_icon/2 && y>canvas.height/2-size_gui_icon/2 && game_over==false){
-        if (confirm('Are you sure you want to resign?')) {
+      } else if (y<canvas.height/2+size_gui_icon/2 && y>canvas.height/2-size_gui_icon/2){
+        if (current_players_turn!=0 && confirm('Are you sure you want to resign?')) {
           clicked_gui_resign();
-          game_over = true;
         }
       }
     } else {
@@ -489,24 +488,26 @@ function draw_state() {
                        size_gui_icon,
                        size_gui_icon/2+size_gui_font/3);
     }
-    try {
-      context.drawImage(images['undo'], 
-                        0, //x
-                        canvas.height-size_gui_icon,//y
-                        size_gui_icon, //width
-                        size_gui_icon);//height
-      context.drawImage(images['end_turn'],
-                        canvas.width-size_gui_icon,//x
-                        canvas.height-size_gui_icon,//y
-                        size_gui_icon,//width
-                        size_gui_icon);//height
-      context.drawImage(images['resign'],
-                        canvas.width-size_gui_icon,//x
-                        canvas.height/2-size_gui_icon/2,//y
-                        size_gui_icon*0.71,//width
-                        size_gui_icon);//height
-    } catch(TypeError){
-//      console.log('Not all images are loaded!');
+    if (current_players_turn != 0){
+      try {
+        context.drawImage(images['undo'], 
+                          0, //x
+                          canvas.height-size_gui_icon,//y
+                          size_gui_icon, //width
+                          size_gui_icon);//height
+        context.drawImage(images['end_turn'],
+                          canvas.width-size_gui_icon,//x
+                          canvas.height-size_gui_icon,//y
+                          size_gui_icon,//width
+                          size_gui_icon);//height
+        context.drawImage(images['resign'],
+                          canvas.width-size_gui_icon,//x
+                          canvas.height/2-size_gui_icon/2,//y
+                          size_gui_icon*0.71,//width
+                          size_gui_icon);//height
+      } catch(TypeError){
+//        console.log('Not all images are loaded!');
+      }
     }
   }
 }

@@ -89,15 +89,13 @@ this.Game = function(board, size_x, size_y, max_players){
   this.spectators = {};
   this.max_players = max_players;
   this.max_spectators = 1;
-  this.broadcast_frequency = 30;
-  this.message = 'Your turn';
 
   this.selected = null;
 // if something is selected: {'index':hex_index, 'item':'man', 'rank':0, 'new':true, 'available_tiles':available_tiles}
 // otherwise: 		     null
 
   this.board_last_turn = JSON.parse(JSON.stringify(this.board));
-  this.current_players_turn = 1;
+  this.current_players_turn = 1; // this becomes zero when the game is finished
   Math.seed = new Date().getTime();
   this.seed_history = [Math.seed];
   this.board_history = [];
@@ -377,27 +375,31 @@ this.Game = function(board, size_x, size_y, max_players){
     this.send_state();
   }
 
-  this.send_state = function() {
+  this.send_state = function(winner=0) {
   // sends full information state to player whose turn it is
-  let socketid = getKeyByValue(this.players, this.current_players_turn);
+    let socketid = getKeyByValue(this.players, this.current_players_turn);
     io.to(socketid).emit('antiyoy state', {
       board:this.board,
       size_x:this.size_x,
       size_y:this.size_y,
-      msg:this.message,
+      msg:'Your turn',
       selected:this.selected,
       current_players_turn:this.current_players_turn,
       public_income:this.public_income
     });
   }
 
-  this.send_state_spec = function(){
+  this.send_state_spec = function(winner=0){
   // broadcast partial information state to all players in room (including spectators)
+    let message_string = this.player_names[this.current_players_turn]+' is next.';
+    if (winner>0){
+      message_string = this.player_names[winner] + ' has won!';
+    }
     io.sockets.in('room'+this.index).emit('antiyoy state', {
       board:this.board,
       size_x:this.size_x,
       size_y:this.size_y,
-      msg:'Player '+this.current_players_turn+' is next.',
+      msg:message_string,
       selected:null,
       current_players_turn:this.current_players_turn,
       public_income:this.public_income
@@ -463,7 +465,7 @@ this.Game = function(board, size_x, size_y, max_players){
   }
 
   this.try_resign = function(socket, player_name){
-    if (this.players.hasOwnProperty(socket.id)){
+    if (this.players.hasOwnProperty(socket.id) && this.current_players_turn!=0){
       let p = this.players[socket.id];
       if (p == this.current_players_turn){
         this.defeated_players.push(this.current_players_turn);
@@ -500,7 +502,10 @@ this.Game = function(board, size_x, size_y, max_players){
       // game is over
       io.sockets.in('room'+this.index).emit('chat message', {id:this.player_names[winner], message:' has won!', color:winner});
       this.board_last_turn = this.parse_board(this.board);
-      this.send_state_spec();
+      this.current_players_turn = 0; // current player to 0 so game loop stops
+      this.max_players = 0; // set max players to 0 so nobody can join
+      this.max_spectators = 0;
+      this.send_state_spec(winner);
       return(true);
     } else {
       return(false);
