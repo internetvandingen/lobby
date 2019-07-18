@@ -9,11 +9,17 @@ var disc_timeout;
 // constants: canvas
 var context = canvas.getContext('2d');
 
-var player_name = '';
-while($.trim(player_name.replace(/[^a-z0-9\s]/gi, '')) == ''){
-  player_name = prompt("Please enter your name");
+let player_name = ''; // not to be used on client side after sending
+let cookies = parseCookie(document.cookie);
+if (Object.keys(cookies).includes('lobby_player_name')){
+  player_name = cookies['lobby_player_name'];
+} else {
+  while($.trim(player_name.replace(/[^a-z0-9\s]/gi, '')) == ''){
+    player_name = prompt("Please enter your name");
+  }
+  player_name = $.trim(player_name.replace(/[^a-z0-9\s]/gi, ''));
+  bake_cookie('lobby_player_name', player_name);
 }
-player_name = $.trim(player_name.replace(/[^a-z0-9\s]/gi, ''));
 
 // -------------------------------------------------  socket communication ------------------------------------------------- 
 var socket = io.connect({path: "/lobby/socket.io", query: 'player_name='+player_name});
@@ -528,9 +534,20 @@ function draw_hex_tile(context, x, y, color, border_color){
   context.fill();
 }
 
+function parseCookie(str) {
+  if (typeof str === 'undefined'){
+    return({});
+  }
+  str = str.split('; ');
+  var result = {};
+  for (var i = 0; i < str.length; i++) {
+    var cur = str[i].split('=');
+    result[cur[0]] = cur[1];
+  }
+  return(result);
+}
 
-
-
-
-
-
+function bake_cookie(name, value) {
+  let cookie = [name, '=', value, ';'].join('');// domain=.', window.location.host.toString(), '; path=/;'].join('');
+  document.cookie = cookie;
+}

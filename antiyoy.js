@@ -69,7 +69,7 @@ this.set_color = function(board, arr, castle_index, color){
         board[arr[i]].bank = color==1 ? 12 : 10;
       }
     } else {
-      console.log(arr[i]+' is not a valid index!');
+      console.log(arr[i]+' is not a valid index! (during set_color on line 72)');
     }
   }
 };
@@ -84,6 +84,7 @@ this.Game = function(board, size_x, size_y, max_players){
   this.size_y = size_y;
   this.players = {}; // players[socketid] = integer (player number in game)
   this.player_names = {}; // player_names[player_nr] = name
+  this.player_sockets = {}; // player_sockets[player_nr] = socketid
   this.player_count = 0;
   this.defeated_players = [];
   this.spectators = {};
@@ -353,8 +354,7 @@ this.Game = function(board, size_x, size_y, max_players){
     this.send_state_spec();
     this.send_state();
     // send notification to player who needs to make a move
-    let socketid = getKeyByValue(this.players, this.current_players_turn);
-    io.to(socketid).emit('notify');
+    io.to(this.player_sockets[this.current_players_turn]).emit('notify');
   }
 
   this.clicked_gui_undo = function(){
@@ -375,10 +375,9 @@ this.Game = function(board, size_x, size_y, max_players){
     this.send_state();
   }
 
-  this.send_state = function(winner=0) {
+  this.send_state = function() {
   // sends full information state to player whose turn it is
-    let socketid = getKeyByValue(this.players, this.current_players_turn);
-    io.to(socketid).emit('antiyoy state', {
+    io.to(this.player_sockets[this.current_players_turn]).emit('antiyoy state', {
       board:this.board,
       size_x:this.size_x,
       size_y:this.size_y,
@@ -416,14 +415,15 @@ this.Game = function(board, size_x, size_y, max_players){
       }
       for (let i=1; i<=this.max_players; i++){
         if (!current_players.includes(i)){
-          this.players[socket.id] = i;
+          this.players[socket.lobby_id] = i;
           this.player_names[i] = name;
+          this.player_sockets[i] = socket.id;
           break;
         }
       }
       this.player_count++;
-      socket.emit('antiyoy player', this.players[socket.id]);
-      if (this.players[socket.id] == this.current_players_turn){
+      socket.emit('antiyoy player', this.players[socket.lobby_id]);
+      if (this.players[socket.lobby_id] == this.current_players_turn){
         // broadcast state once for every other player
         this.send_state_spec();
 	// send full state to the player whose turn it is
@@ -442,35 +442,36 @@ this.Game = function(board, size_x, size_y, max_players){
         }
         for (let i=1; i<=this.max_spectators; i++){
           if (!current_spectators.includes(i)){
-            this.spectators[socket.id] = i;
+            this.spectators[socket.lobby_id] = i;
             break;
           }
         }
-        socket.emit('antiyoy spectator', this.spectators[socket.id]);
-        io.sockets.in('room'+this.index).emit('chat message', {message:'spectator '+this.spectators[socket.id]+' connected'});
+        socket.emit('antiyoy spectator', this.spectators[socket.lobby_id]);
+        io.sockets.in('room'+this.index).emit('chat message', {message:'spectator '+this.spectators[socket.lobby_id]+' connected'});
         this.send_state_spec();
       } else {
         // disallow spectator and disconnect
         socket.disconnect();
       }
     }
+  }
 
-    this.player_leave = function(socketid){
-      let id = this.players[socketid];
-      delete this.player_names[id];
-      delete this.players[socketid];
-      this.player_count--;
-      if (this.player_count == 1){
-        let winner = this.players[Object.keys(this.players)[0]];
-        this.parse_winner(winner);
-      }
+  this.player_leave = function(socketid){
+    // player leaves voluntarily
+    let id = this.players[socketid];
+    delete this.player_sockets[id];
+    delete this.player_names[id];
+    delete this.players[socketid];
+    this.player_count--;
+    if (this.player_count == 1){
+      let winner = this.players[Object.keys(this.players)[0]];
+      this.parse_winner(winner);
     }
-
   }
 
   this.try_resign = function(socket, player_name){
-    if (this.players.hasOwnProperty(socket.id) && this.current_players_turn!=0){
-      let p = this.players[socket.id];
+    if (this.players.hasOwnProperty(socket.lobby_id) && this.current_players_turn!=0){
+      let p = this.players[socket.lobby_id];
       if (p == this.current_players_turn){
         this.defeated_players.push(this.current_players_turn);
         this.clicked_gui_end_turn();
@@ -947,9 +948,4 @@ this.Game = function(board, size_x, size_y, max_players){
 
 };
 
-
-
-function getKeyByValue(object, value) {
-  return Object.keys(object).find(key => object[key] === value);
-}
 
