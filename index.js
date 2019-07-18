@@ -51,16 +51,24 @@ io.use(function(socket, next){
       // handle reconnect
       socket.reconnecting = true;
       players[socket.lobby_id].socketid = socket.id;
+      if (Object.keys(players[socket.lobby_id]).includes('disconnect_timer')){
+        clearTimeout(players[socket.lobby_id]['disconnect_timer']);
+        delete players[socket.lobby_id]['disconnect_timer'];
+      }
       let gameid = players[socket.lobby_id].gameid;
       if(gameid != 0 && Object.keys(lobby).includes(gameid)){
         // reconnect to game
         let g = lobby[gameid];
         let player_ingame_id = g.players[socket.lobby_id];
         g.player_sockets[player_ingame_id] = socket.id;
-        socket.join('room'+gameid);
         socket.leave('room0');
+        socket.join('room'+gameid);
         socket.emit('join accepted', gameid);
         socket.emit('chat message', {id:'Server: ', message:'You are now in game '+gameid, color:0});
+        io.sockets.in('room'+gameid).emit('chat message', {
+                id:players[socket.lobby_id].pname,
+                message:' connected',
+                color:players[socket.lobby_id].id});
         setTimeout(function(g){
           g.send_state_spec();
           g.send_state();
@@ -135,6 +143,7 @@ io.on('connection', function(socket) {
     socket.emit('player', players[socket.lobby_id].id);
     socket.join('room0');
     io.sockets.in('room0').emit('chat message', {id:players[socket.lobby_id].pname, message:' connected', color:players[socket.lobby_id].id});
+    io.sockets.in('room0').emit('refresh lobby', get_refresh_lobby());
   } else {
     // disallow player and disconnect
     socket.emit('chat message', {id:'', message:'Lobby is full! ('+max_nr_players+')', color:0});
@@ -204,7 +213,7 @@ io.on('connection', function(socket) {
       io.sockets.in('room'+p.gameid).emit('chat message', {id:p.pname, message:' disconnected', color:players[socket.lobby_id].id});
       if(p.gameid != 0 && Object.keys(lobby).includes(p.gameid)){
         let g = lobby[p.gameid];
-        // keep player in memory because they might come back, but set 10s timer to destroy
+        // keep player in memory because they might come back, but set 15s timer to destroy
         players[socket.lobby_id]['disconnect_timer'] = setTimeout( function(lobby_id) {
           let gameid = players[lobby_id].gameid;
           let g = lobby[gameid];
@@ -216,7 +225,7 @@ io.on('connection', function(socket) {
           // check and destroy game if no players are left
           check_empty(gameid);
           delete players[lobby_id];
-        }, 10000, socket.lobby_id);
+        }, 15000, socket.lobby_id);
       } else {
         delete players[socket.lobby_id];
       }
