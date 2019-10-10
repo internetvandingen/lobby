@@ -22,7 +22,7 @@ if (Object.keys(cookies).includes('lobby_player_name')){
 }
 
 // -------------------------------------------------  socket communication ------------------------------------------------- 
-var socket = io.connect({path: "/lobby/socket.io", query: 'player_name='+player_name});
+var socket = io.connect({query: 'player_name='+player_name});
 socket.on('player', function(id) {
   player_id = id;
   prefix_player_id = 'p';

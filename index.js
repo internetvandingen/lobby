@@ -9,9 +9,9 @@ var socketIO = require('socket.io');
 var app = express();
 app.set('strict routing', true);
 
-var server  = app.listen(8000);
+var server  = app.listen(80);
 
-var io = socketIO(server, {path: '/lobby/socket.io', pingInterval: 5000});
+var io = socketIO(server, {pingInterval: 5000});
 
 
 function parseCookie(str) {
@@ -28,7 +28,7 @@ function parseCookie(str) {
 }
 
 
-app.get("/lobby/", function(req, res) {
+app.get("/", function(req, res) {
   let rc = parseCookie(req.headers.cookie);
   // if lobby_id cookie is not set, set one
   if (Object.keys(rc).includes('lobby_id')){
@@ -85,7 +85,7 @@ io.use(function(socket, next){
   next(new Error('Player name rejected'));
 });
 
-app.use('/lobby/', express.static(__dirname + '/public/'));
+app.use('/', express.static(__dirname + '/public/'));
 
 
 var Antiyoy = require('./antiyoy');
