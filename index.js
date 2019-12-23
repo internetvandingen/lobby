@@ -119,7 +119,7 @@ function add_game(game_info){
     lobby[index].name = name;
     return(index);
   } else {
-    return('"'+name+'" is not an available map generator!');
+    return('"'+type+'" is not an available map generator!');
   }
 }
 

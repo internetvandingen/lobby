@@ -19,7 +19,7 @@ this.Hextile = function(x, y) {
 this.generate_square = function(n=2){
   n = Number(n);
   n = n<=2 ? 2 : n; // minimum of 2
-  n = n> 7 ? 7 : n; // maximum of 7
+  n = n> 5 ? 5 : n; // maximum of 5
   let max_players = 2;
   let board = {};
   let size_y = 2*n+2;
@@ -39,7 +39,7 @@ this.generate_square = function(n=2){
 this.generate_triangle = function(n=6){
   n = Number(n);
   n = n<=6 ? 6 : n; // minimum of 6
-  n = n>20 ? 20: n; // maximum of 20
+  n = n>15 ? 15: n; // maximum of 15
   let max_players = 3;
   let board = {};
   let size_y = n, size_x = n;
@@ -56,8 +56,31 @@ this.generate_triangle = function(n=6){
   return([board, size_x, size_y, max_players]);
 };
 
+
+this.generate_rhombus = function(n=4){
+  n = Number(n);
+  n = n<=2 ? 2 : n; // minimum of 2
+  n = n> 5 ? 5 : n; // maximum of 5
+  let max_players = 2;
+  let board = {};
+  let size_y = 2*n+2;
+  let size_x = 2*n+1;
+  for (let x=0; x<size_x; x++){
+    let temp_y = x%2==0 ? size_y-1 : size_y;
+    for (let y=0; y<temp_y; y++){
+      board[x*size_y+y] = new this.Hextile(x, y);
+    }
+  }
+  
+  this.set_color(board, [0, 1, size_y, size_y+1], 0, 1);
+  this.set_color(board, [size_y-3, size_y-2, size_y*2-2, size_y*2-1], 1, 2);
+  this.set_color(board, [(size_x-2)*size_y, (size_x-2)*size_y+1, (size_x-1)*size_y, (size_x-1)*size_y+1], 2, 3);
+  this.set_color(board, [(size_x-1)*size_y-2, (size_x-1)*size_y-1, (size_x-1)*(size_y+1)-1, (size_x-1)*(size_y+1)], 3, 4);
+  return([board, size_x, size_y, max_players]);
+}
+
 this.available_generators = function(){
-  return(['triangle', 'square']);
+  return(['triangle', 'square', 'rhombus']);
 };
 
 this.set_color = function(board, arr, castle_index, color){
