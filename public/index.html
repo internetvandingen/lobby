@@ -55,22 +55,33 @@
   <div id="dialog" title="Create new antiyoy game">
     <table>
       <tr>
-          <td>name</td>
-          <td><input type='text' name='game_name'></input></td>
+        <td>name</td>
+        <td><input type='text' name='game_name'></td>
       </tr>
       <tr>
-          <td>map</td>
-          <td>
-            <select name='map'>
-              <option value='square'>Square (2 players)</option>
-              <option value='triangle'>Triangle (3 players)</option>
-              <option value='rhombus'>Rhombus (4 players)</options>
-            </select>
-          </td>
+        <td>type</td>
+        <td>
+          <select name='game_type'>
+            <option value='antiyoy'>Antiyoy</option>
+            <option value='test'>test</option>
+          </select>
+        </td>
+      </tr>
+    </table>
+    <table id='options' name='antiyoy'>
+      <tr>
+        <td>map</td>
+        <td>
+          <select name='game_map'>
+            <option value='square'>Square (2 players)</option>
+            <option value='triangle'>Triangle (3 players)</option>
+            <option value='rhombus'>Rhombus (4 players)</option>
+          </select>
+        </td>
       </tr>
       <tr>
-          <td>map size</td>
-          <td><input type='number' name='game_size' value=4></input></td>
+        <td>map size</td>
+        <td><input type='number' name='game_size' value=4></input></td>
       </tr>
     </table>
   </div>

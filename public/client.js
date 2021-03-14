@@ -108,17 +108,23 @@ $(function () {
     $('ul').toggle();
   });
 
+  $("select[name=game_type]").on('change', function() {
+    // select all html elements with id game_type
+    $("#options").toggle();
+  });
+
   $("#dialog").dialog({
         autoOpen: false,
         resizable: false,
         modal: true,
         width:'auto',
         buttons:{'create': function(){
+          let game_type = $('select[name=game_type]').val();
           let game_name = $('input[name=game_name]').val();
           let game_size = $('input[name=game_size]').val();
-          let game_map  = $('select').val();
+          let game_map  = $('select[name=game_map]').val();
           if (game_name != '' && game_map != '' && game_size>1){
-            socket.emit('new game', {'name':game_name, 'map':game_map, 'map_size':game_size});
+            socket.emit('new game', {'type':game_type, 'name':game_name, 'map':game_map, 'map_size':game_size});
             $(this).dialog("close");
           }
         }},
