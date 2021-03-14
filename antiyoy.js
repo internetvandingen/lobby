@@ -2,7 +2,7 @@
 
 var fs = require('fs');
 
-// ------------------------------------------------- game functions ------------------------------------------------- 
+// ------------------------------------------------- game functions -------------------------------------------------
 module.exports = function(io) {
 
 this.Hextile = function(x, y) {
@@ -30,7 +30,7 @@ this.generate_square = function(n=2){
       board[x*size_y+y] = new this.Hextile(x, y);
     }
   }
-  
+
   this.set_color(board, [(2*n)*size_y+1, (2*n)*size_y, (2*n-1)*size_y+1, (2*n+1)*size_y+1], 0, 1);
   this.set_color(board, [(2*n+1)*size_y-3, (2*n+1)*size_y-2, (2*n)*size_y-2, (2*n+2)*size_y-2], 0, 2);
   return([board, size_x, size_y, max_players]);
@@ -71,7 +71,7 @@ this.generate_rhombus = function(n=4){
       board[x*size_y+y] = new this.Hextile(x, y);
     }
   }
-  
+
   this.set_color(board, [0, 1, size_y, size_y+1], 0, 1);
   this.set_color(board, [size_y-3, size_y-2, size_y*2-2, size_y*2-1], 1, 2);
   this.set_color(board, [(size_x-2)*size_y, (size_x-2)*size_y+1, (size_x-1)*size_y, (size_x-1)*size_y+1], 2, 3);
@@ -143,14 +143,14 @@ this.Game = function(board, size_x, size_y, max_players){
   this.rules.spawn_chance_pine /= this.max_players;
   this.rules.spawn_chance_palm /= this.max_players;
 
-  // ---------------------------------- click actions ---------------------------------- 
+  // ---------------------------------- click actions ----------------------------------
   this.clicked_hex = function(hex_index){
     this.remove_highlighted_tiles();
     if (this.selected == null || this.selected.item == 'none'){
       // nothing is currently selected
-  
+
       if (this.board[hex_index].color == this.current_players_turn){
-        // if tile belongs to player whos turn it is 
+        // if tile belongs to player whos turn it is
         let area = this.get_tiles_in_area(hex_index, [hex_index]);
         if (area.length>1){
           let money = this.get_money_status(area);
@@ -173,23 +173,23 @@ this.Game = function(board, size_x, size_y, max_players){
         // clicked on hex not owned by you
         this.selected = null;
       }
-  
+
     } else {
       // something is already selected
-  
+
       let area = this.get_tiles_in_area(this.selected.index, [this.selected.index]);
       if (area.length>1){
         let money = this.get_money_status(area);
-    
+
         if (this.selected.available_tiles.includes(hex_index) && money[0]>=this.selected.price){
           // clicked tile is in available tiles of selected item and we have enough money
           // store current board. Parse and stringify is to make a deep copy of an object
           this.board_history.push(JSON.parse(JSON.stringify(this.board)));
           this.seed_history.push(Math.seed);
-    
+
           // deduce price from bank in castle
           this.board[money[2]].bank -= this.selected.price;
-  
+
           // place item
           if (this.board[hex_index].color == this.current_players_turn && this.board[hex_index].item == 'man'){
             // place on top of existing unit
@@ -204,18 +204,18 @@ this.Game = function(board, size_x, size_y, max_players){
             this.board[hex_index].rank = this.selected.rank;
             this.board[hex_index].bank = 0;
           }
-    
+
           if (!this.selected.new) {
             // selected item was is not a new item, so remove unit on previous position
             this.board[this.selected.index].item = 'none';
             this.board[this.selected.index].rank = '';
           }
-  
+
           let selected_color = this.board[hex_index].color;
-    
+
           // change color of tile to your color in case territory was conquered
           this.board[hex_index].color = this.current_players_turn;
-    
+
           if (![0, this.current_players_turn].includes(selected_color)){
             // conquered enemy territory, so update enemy areas
             this.update_player_areas(selected_color);
@@ -226,7 +226,7 @@ this.Game = function(board, size_x, size_y, max_players){
           this.selected = null;
         }
       }
-  
+
       if (this.board[hex_index].color == this.current_players_turn){
         // independent wether the attempted move can be made or not, if we clicked on our color, update information
         area = this.get_tiles_in_area(hex_index, [hex_index]);
@@ -242,7 +242,7 @@ this.Game = function(board, size_x, size_y, max_players){
     }
     this.send_state();
   }
-  
+
   this.clicked_gui_unit = function(){
     this.remove_highlighted_tiles();
     if (this.selected.item == 'man' && this.selected.new){
@@ -259,7 +259,7 @@ this.Game = function(board, size_x, size_y, max_players){
     }
     this.send_state();
   }
-  
+
   this.clicked_gui_structure = function(){
     this.remove_highlighted_tiles();
     if (this.selected == null){return;}
@@ -299,13 +299,13 @@ this.Game = function(board, size_x, size_y, max_players){
     this.highlight_tiles(this.selected.available_tiles);
     this.send_state();
   }
-  
+
   this.clicked_gui_end_turn = function(){
     this.remove_highlighted_tiles();
     this.selected = null;
     this.board_history = [];
     this.seed_history = [];
-  
+
     // check if players are defeated
     for (let i=1;i<=this.max_players;i++){
       if (!this.defeated_players.includes(i)){
@@ -314,15 +314,15 @@ this.Game = function(board, size_x, size_y, max_players){
         }
       }
     }
-    
+
     if (this.check_winner()) {return;}
-  
+
     // update current player
     for (let i=1;i<=this.max_players;i++){
       this.update_current_player();
       if (!this.defeated_players.includes(this.current_players_turn)){ break; }
     }
-  
+
     // grow trees
     let trees = this.get_tree_spawn_tiles(Object.keys(this.board));
     for (let i in trees.palms){
@@ -331,12 +331,12 @@ this.Game = function(board, size_x, size_y, max_players){
     for (let i in trees.pines){
       this.board[trees.pines[i]].item = 'pine';
     }
-  
+
     // check areas for starving units, update money, reset can_move
     let areas = this.get_areas(this.current_players_turn);
     for (let i in areas) {
       let area = areas[i];
-  
+
       if (area.length == 1){
         // area of only one tile
         if (this.board[area[0]].item == 'man'){
@@ -391,7 +391,7 @@ this.Game = function(board, size_x, size_y, max_players){
     }
     this.send_state();
   }
-  
+
   this.clicked_background = function(){
     this.selected = null;
     this.remove_highlighted_tiles();
@@ -428,7 +428,7 @@ this.Game = function(board, size_x, size_y, max_players){
     });
   }
 
-  // ---------------------------------- from index ---------------------------------- 
+  // ---------------------------------- from index ----------------------------------
   this.new_player = function(socket, name){
     // Assign player number on connecting
     if (Object.keys(this.players).length < this.max_players){
@@ -507,7 +507,7 @@ this.Game = function(board, size_x, size_y, max_players){
   }
 
 
-  // ---------------------------------- lib ---------------------------------- 
+  // ---------------------------------- lib ----------------------------------
 
   this.get_income = function(){
     let income = [];
@@ -667,7 +667,7 @@ this.Game = function(board, size_x, size_y, max_players){
         }
       } else {
         let castles = this.get_castles(area);
-        if (Object.keys(castles).length == 0) { 
+        if (Object.keys(castles).length == 0) {
           // area does not contain castle
           let empty_tiles = [];
           for (let j in area){
@@ -749,7 +749,7 @@ this.Game = function(board, size_x, size_y, max_players){
     let all_area_tiles = []; // tiles already investigated
     let area_tiles = [hex_index];  // tiles investigated last move
     let foreign_tiles = [];
-  
+
     // unit_move_limit
     for (let move=0; move<4; move++){
       let neighbors = [];
@@ -903,7 +903,7 @@ this.Game = function(board, size_x, size_y, max_players){
     }
     return(area_tiles);
   }
-  
+
   this.get_neighbor_tiles = function(centertile_index){
     // returns indices of all tiles neihbouring centertile that exist on the board
     let c = this.index_to_coord(centertile_index);
@@ -921,7 +921,7 @@ this.Game = function(board, size_x, size_y, max_players){
     }
     return(tile_indices);
   }
-  
+
   this.get_neighbor_tiles_color = function(centertile_index){
     // returns indices of all tiles neighboring centertile that exist on the board and have the same color
     let c = this.index_to_coord(centertile_index);
@@ -939,8 +939,8 @@ this.Game = function(board, size_x, size_y, max_players){
     }
     return(tile_indices);
   }
-  
-  
+
+
   this.get_castles = function(area){
     let castles = {};
     for (let i in area) {
@@ -950,18 +950,18 @@ this.Game = function(board, size_x, size_y, max_players){
     }
     return(castles);
   }
-  
+
   this.is_coast = function(hex_index){
     let neighbors = this.get_neighbor_tiles(hex_index);
     return(neighbors.length < 6 ? true : false);
   },
-  
+
   this.index_to_coord = function(index){
     let x = Math.floor(index/this.size_y);
     let y = index%this.size_y;
     return([x,y]);
   },
-  
+
   this.coord_to_index = function(coord){
     return(coord[0]*this.size_y + coord[1]);
   }

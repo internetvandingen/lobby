@@ -21,7 +21,7 @@ if (Object.keys(cookies).includes('lobby_player_name')){
   bake_cookie('lobby_player_name', player_name);
 }
 
-// -------------------------------------------------  socket communication ------------------------------------------------- 
+// -------------------------------------------------  socket communication -------------------------------------------------
 var socket = io.connect({query: 'player_name='+player_name});
 socket.on('player', function(id) {
   player_id = id;
@@ -30,7 +30,7 @@ socket.on('player', function(id) {
 
 
 $(function () {
-// -------------------------------------------------  chat communication ------------------------------------------------- 
+// -------------------------------------------------  chat communication -------------------------------------------------
   $('form').submit(function(e){
     e.preventDefault(); // prevents page reloading
     socket.emit('chat message', $('#m').val());
@@ -53,7 +53,7 @@ $(function () {
     $('#messages').scrollTop($('#messages').prop('scrollTopMax'))
   });
 
-// -------------------------------------------------  lobby communication ------------------------------------------------- 
+// -------------------------------------------------  lobby communication -------------------------------------------------
   socket.on('refresh lobby', function(data) {
     // update nr of players connected
     let nr_players = data.nr_players;
@@ -99,7 +99,7 @@ $(function () {
       $('ul').empty();
       $('canvas').hide();
       $('#lobby').show();
-      socket.emit('leave game');     
+      socket.emit('leave game');
     }
   });
 
@@ -128,7 +128,7 @@ $(function () {
             $(this).dialog("close");
           }
         }},
-        open: function(){ 
+        open: function(){
           $('.ui-widget-overlay').bind('click',function(){
             $('#dialog').dialog('close');
           })
@@ -159,7 +159,7 @@ $(function () {
 
 
 
-// ------------------------------------------------- antiyoy ------------------------------------------------- 
+// ------------------------------------------------- antiyoy -------------------------------------------------
 
 // variables: canvas
 var display_size = 0; // 0, 1, 2 => lowest(small), low(medium), normal (large)
@@ -189,7 +189,7 @@ var public_income = [];
 var show_public_income = false;
 var current_players_turn = 0;
 
-// -------------------------------------------------  socket communication ------------------------------------------------- 
+// -------------------------------------------------  socket communication -------------------------------------------------
 socket.on('antiyoy image', function(info) {
   if (info.image) {
     let img_temp = new Image();
@@ -326,7 +326,7 @@ function click_end(){
         y_int += 0.5;
       }
       y_int = Math.round(y_int);
-  
+
       // if clicked on hex in board:
       let index = coord_to_index([x_int,y_int]);
       if (x_int>=0 && y_int>=0 && x_int<size_x && y_int<size_y && hexboard.hasOwnProperty(index)){
@@ -395,9 +395,9 @@ function draw_state() {
          ){
         // draw exclamation mark for units/structures that have available actions
         try{
-          context.drawImage(images.exclamation_mark, 
+          context.drawImage(images.exclamation_mark,
                             x_coord - hex_r*0.65,
-                            y_coord - hex_r, 
+                            y_coord - hex_r,
                             hex_r/2,
                             hex_r);
         } catch(TypeError){
@@ -431,7 +431,7 @@ function draw_state() {
   context.fillStyle = 'white';
   context.textAlign = "center";
   context.fillText(message, canvas.width/2, size_gui_icon/2+size_gui_font/3);
-  
+
   // draw gui
   try{
     context.drawImage(images['coin'], 0, 0, size_gui_icon, size_gui_icon);
@@ -502,7 +502,7 @@ function draw_state() {
     }
     if (current_players_turn != 0){
       try {
-        context.drawImage(images['undo'], 
+        context.drawImage(images['undo'],
                           0, //x
                           canvas.height-size_gui_icon,//y
                           size_gui_icon, //width
@@ -527,10 +527,10 @@ function draw_state() {
 function draw_hex_tile(context, x, y, color, border_color){
   let lw = Math.floor(hex_r/10);
   context.beginPath();
-  context.moveTo(x + (hex_r-lw)*Math.cos(0), 
+  context.moveTo(x + (hex_r-lw)*Math.cos(0),
                  y + (hex_r-lw)*Math.sin(0));
   for (let i = 1; i <= 7;i += 1) {
-      context.lineTo (x + (hex_r-lw)*Math.cos(i*2*Math.PI/6), 
+      context.lineTo (x + (hex_r-lw)*Math.cos(i*2*Math.PI/6),
                       y + (hex_r-lw)*Math.sin(i*2*Math.PI/6));
   }
   context.strokeStyle = border_color;

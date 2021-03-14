@@ -73,7 +73,7 @@ io.use(function(socket, next){
           g.send_state_spec();
           g.send_state();
         }, 500, g);
-        
+
       }
     } else {
       // create new player
@@ -238,7 +238,7 @@ io.on('connection', function(socket) {
     }
   });
 
-  // ------------------------------------------------- START antiyoy ------------------------------------------------- 
+  // ------------------------------------------------- START antiyoy -------------------------------------------------
 
   // Send images now (when connecting)
   function emit_image(socket, filename, image_name, image_number){
@@ -321,9 +321,9 @@ io.on('connection', function(socket) {
       g.try_resign(socket, players[socket.lobby_id].pname);
     }
   });
-  // ------------------------------------------------- END antiyoy ------------------------------------------------- 
+  // ------------------------------------------------- END antiyoy -------------------------------------------------
 
-  
+
 });
 
 function recieved_chat_message(msg, socketid){
@@ -345,7 +345,7 @@ Math.seededRandom = function(min, max) {
 
     Math.seed = (Math.seed * 9301 + 49297) % 233280;
     let rnd = Math.seed / 233280;
- 
+
     return(Math.floor(min + rnd * (max - min)));
 }
 
