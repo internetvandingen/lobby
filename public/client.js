@@ -118,7 +118,7 @@ $(function () {
           let game_size = $('input[name=game_size]').val();
           let game_map  = $('select').val();
           if (game_name != '' && game_map != '' && game_size>1){
-            socket.emit('new game', {'name':game_name, 'type':game_map, 'map_size':game_size});
+            socket.emit('new game', {'name':game_name, 'map':game_map, 'map_size':game_size});
             $(this).dialog("close");
           }
         }},

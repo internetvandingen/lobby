@@ -100,17 +100,17 @@ var lobby = {}; // {'gameid': Game object}
 function add_game(game_info){
   // {name, type, map_size}
   let name = game_info['name'];
-  let type = game_info['type'];
+  let map = game_info['map'];
   let map_size = game_info['map_size'];
   name     =     name.replace(/[^a-zA-Z0-9]/g,'').trim();
-  type     =     type.replace(/[^a-zA-Z0-9]/g,'').trim();
+  map      =     map.replace(/[^a-zA-Z0-9]/g,'').trim();
   map_size = map_size.replace(/[^0-9]/g,'').trim();
-  if (name == '' || type == '' || map_size == ''){
+  if (name == '' || map == '' || map_size == ''){
     return('Invalid input!');
   }
   // check if method exists and create new game
-  if (antiyoy.available_generators().indexOf(type) > -1){
-    var [board, size_x, size_y, max_players] = antiyoy['generate_'+type](map_size); //generate_square, generate_triangle
+  if (antiyoy.available_generators().indexOf(map) > -1){
+    var [board, size_x, size_y, max_players] = antiyoy['generate_'+map](map_size); //generate_square, generate_triangle
     // get index ID to use for next game
     let index = (Object.keys(lobby).length==0 ? 1 : lobby[Object.keys(lobby).sort().pop()].index+1 );
     lobby[index] = new antiyoy.Game(board, size_x, size_y, max_players);
@@ -119,7 +119,7 @@ function add_game(game_info){
     lobby[index].name = name;
     return(index);
   } else {
-    return('"'+type+'" is not an available map generator!');
+    return('"'+map+'" is not an available map generator!');
   }
 }
 
