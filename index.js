@@ -91,6 +91,9 @@ app.use('/', express.static(__dirname + '/public/'));
 var Antiyoy = require('./antiyoy');
 var antiyoy = new Antiyoy(io);
 
+var Nepal = require('./nepal');
+var nepal = new Nepal(io);
+
 var max_nr_players = 50;
 var players = {}; // object[socket.lobby_id] = {playernumber:#, gameid:#, pname:'Unnamed'}
 var lobby = {}; // {'gameid': Game object}
@@ -101,15 +104,18 @@ function add_game(game_info){
   // {name, type, map_size}
   let type = game_info['type'];
   let name = game_info['name'];
+  name = name.replace(/[^a-zA-Z0-9]/g,'').trim();
+  if (name == '') {
+    return('Invalid game name!');
+  }
 
   if (type == 'antiyoy') {
     let map = game_info['map'];
     let map_size = game_info['map_size'];
-    name     =     name.replace(/[^a-zA-Z0-9]/g,'').trim();
     map      =     map.replace(/[^a-zA-Z0-9]/g,'').trim();
     map_size = map_size.replace(/[^0-9]/g,'').trim();
-    if (name == '' || map == '' || map_size == ''){
-      return('Invalid input!');
+    if (map == '' || map_size == ''){
+      return('Invalid game info for Antiyoy!');
     }
     // check if method exists and create new game
     if (antiyoy.available_generators().indexOf(map) > -1){
@@ -122,6 +128,11 @@ function add_game(game_info){
     } else {
       return('"'+map+'" is not an available map generator!');
     }
+  } else if (type == 'nepal') {
+    let index = getNewGameId();
+    lobby[index] = new nepal.Game();
+    lobby[index].index = index;
+    lobby[index].name = name;
   } else {
     return('Game of type '+type+' does not exist here...');
   }
@@ -322,7 +333,6 @@ io.on('connection', function(socket) {
     }
   });
   // ------------------------------------------------- END antiyoy -------------------------------------------------
-
 
 });
 
